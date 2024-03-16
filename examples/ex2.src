@@ -1,0 +1,2 @@
+include sys.io
+printf("Hello, World!\n")

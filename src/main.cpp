@@ -1,28 +1,67 @@
 #include <iostream>
 #include <vector>
 #include <set>
+#include <string>
+#include <cstdint>
+#include <optional>
 
 #include "token.h"
 #include "lexer.h"
+#include "parser.h"
+#include "AST.h"
 
 int main() {
-    Token *root = new Token(Token::Type::multiply, "*");    
-    root->children.push_back(new Token(Token::Type::number, "2"));
-    root->children.push_back(new Token(Token::Type::number, "3"));
+    // Token *rootToken = new Token(Token::Type::multiply, "*", 0, 0);
+    // SyntaxNode *root = new SyntaxNode(rootToken);
+    // root->children.push_back(new SyntaxNode(new Token(Token::Type::number, "2", 0, 0)));
+    // root->children.push_back(new SyntaxNode(new Token(Token::Type::number, "3", 0, 0)));
+
+    // proper AST for 3 > 4 + 5 * 6
+    Token *root1 = new Token(Token::Type::literal, ">", 0, 0);
+    SyntaxNode *ast1 = new SyntaxNode(root1);
+    ast1->children.push_back(new SyntaxNode(new Token(Token::Type::number, "3", 0, 0)));
+    ast1->children.push_back(new SyntaxNode(new Token(Token::Type::literal, "+", 0, 0)));
+    ast1->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "4", 0, 0)));
+    ast1->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "*", 0, 0)));
+    ast1->children[1]->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "5", 0, 0)));
+    ast1->children[1]->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "6", 0, 0)));
+
+    // proper AST for 6 * 5 + 4 < 3
+    Token *root2 = new Token(Token::Type::literal, "<", 0, 0);
+    SyntaxNode *ast2 = new SyntaxNode(root2);
+    ast2->children.push_back(new SyntaxNode(new Token(Token::Type::literal, "+", 0, 0)));
+    ast2->children.push_back(new SyntaxNode(new Token(Token::Type::number, "3", 0, 0)));
+    ast2->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::literal, "*", 0, 0)));
+    ast2->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "4", 0, 0)));
+    ast2->children[0]->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "6", 0, 0)));
+    ast2->children[0]->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "5", 0, 0)));
+
+    // proper AST for 1 * 2 + 3 * 4
+    Token *root3 = new Token(Token::Type::literal, "+", 0, 0);
+    SyntaxNode *ast3 = new SyntaxNode(root3);
+    ast3->children.push_back(new SyntaxNode(new Token(Token::Type::literal, "*", 0, 0)));
+    ast3->children.push_back(new SyntaxNode(new Token(Token::Type::literal, "*", 0, 0)));
+    ast3->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "1", 0, 0)));
+    ast3->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "2", 0, 0)));
+    ast3->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "3", 0, 0)));
+    ast3->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "4", 0, 0)));
 
     Lexer lexer(std::cin);
 
-    std::set<char> syntax_chars({'(', ')', '+', '*', '.'});
+    //std::cout << root->to_string() << std::endl;
 
-    std::set<int> is { {1, 2, 3, 4} };
+    std::cout << ast1->to_string() << std::endl;
+    std::cout << ast2->to_string() << std::endl;
+    std::cout << ast3->to_string() << std::endl;
 
-    //std::cout << true << std::endl;
-    
-    std::cout << std::set<char>({'(', ')', '+', '*', '.'}).contains('*') << std::endl;
-
-    std::cout << root->to_string() << std::endl;
+    // std::cout << binary_precedence[syntax_ids[ast1->token->literal]].precedence << std::endl;
+    // std::cout << binary_precedence[syntax_ids[ast2->token->literal]].precedence << std::endl;
+    // std::cout << binary_precedence[syntax_ids[ast3->token->literal]].precedence << std::endl;
 
 
+    // while (lexer.nonempty()) {
+    //     std::cout << lexer.next().value().literal << std::endl;
+    // }
 
     return 0;
 }
