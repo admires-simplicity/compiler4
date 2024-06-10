@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <optional>
 
-#include "token.h"
 #include "lexer.h"
 #include "parser.h"
 #include "AST.h"
@@ -17,30 +16,30 @@ int main() {
     // root->children.push_back(new SyntaxNode(new Token(Token::Type::number, "3", 0, 0)));
 
     // proper AST for 3 > 4 + 5 * 6
-    Token *root1 = new Token(Token::Type::literal, ">", 0, 0);
+    Token *root1 = new Token(Token::Type::identifier, ">", 0, 0);
     SyntaxNode *ast1 = new SyntaxNode(root1);
     ast1->children.push_back(new SyntaxNode(new Token(Token::Type::number, "3", 0, 0)));
-    ast1->children.push_back(new SyntaxNode(new Token(Token::Type::literal, "+", 0, 0)));
+    ast1->children.push_back(new SyntaxNode(new Token(Token::Type::identifier, "+", 0, 0)));
     ast1->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "4", 0, 0)));
     ast1->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "*", 0, 0)));
     ast1->children[1]->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "5", 0, 0)));
     ast1->children[1]->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "6", 0, 0)));
 
     // proper AST for 6 * 5 + 4 < 3
-    Token *root2 = new Token(Token::Type::literal, "<", 0, 0);
+    Token *root2 = new Token(Token::Type::identifier, "<", 0, 0);
     SyntaxNode *ast2 = new SyntaxNode(root2);
-    ast2->children.push_back(new SyntaxNode(new Token(Token::Type::literal, "+", 0, 0)));
+    ast2->children.push_back(new SyntaxNode(new Token(Token::Type::identifier, "+", 0, 0)));
     ast2->children.push_back(new SyntaxNode(new Token(Token::Type::number, "3", 0, 0)));
-    ast2->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::literal, "*", 0, 0)));
+    ast2->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::identifier, "*", 0, 0)));
     ast2->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "4", 0, 0)));
     ast2->children[0]->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "6", 0, 0)));
     ast2->children[0]->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "5", 0, 0)));
 
     // proper AST for 1 * 2 + 3 * 4
-    Token *root3 = new Token(Token::Type::literal, "+", 0, 0);
+    Token *root3 = new Token(Token::Type::identifier, "+", 0, 0);
     SyntaxNode *ast3 = new SyntaxNode(root3);
-    ast3->children.push_back(new SyntaxNode(new Token(Token::Type::literal, "*", 0, 0)));
-    ast3->children.push_back(new SyntaxNode(new Token(Token::Type::literal, "*", 0, 0)));
+    ast3->children.push_back(new SyntaxNode(new Token(Token::Type::identifier, "*", 0, 0)));
+    ast3->children.push_back(new SyntaxNode(new Token(Token::Type::identifier, "*", 0, 0)));
     ast3->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "1", 0, 0)));
     ast3->children[0]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "2", 0, 0)));
     ast3->children[1]->children.push_back(new SyntaxNode(new Token(Token::Type::number, "3", 0, 0)));
@@ -62,6 +61,11 @@ int main() {
     // while (lexer.nonempty()) {
     //     std::cout << lexer.next().value().literal << std::endl;
     // }
+
+    SyntaxNode *parsed = Parser(lexer).parse();
+    std::cout << "\nparsed: " << std::endl;
+    if (parsed) std::cout << parsed->to_string() << std::endl;
+    else std::cout << "null" << std::endl;
 
     return 0;
 }

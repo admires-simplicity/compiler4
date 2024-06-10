@@ -3,10 +3,10 @@
 #include <iostream>
 #include <string>
 #include <set>
-#include <queue>
+#include <deque>
 #include <optional>
 
-class Lexeme {
+class Token {
 public:
   enum class Type {
     identifier,
@@ -15,11 +15,11 @@ public:
   };
 
   Type type;
+  std::string literal;
   uint32_t line;
   uint32_t column;
-  std::string literal;
 
-  Lexeme(Type type, uint32_t line, uint32_t column, std::string literal) : type(type), line(line), column(column), literal(literal) {}
+  Token(Type type, std::string literal, uint32_t line, uint32_t column) : type(type), literal(literal), line(line), column(column) {}
 };
 
 class Lexer {
@@ -32,37 +32,47 @@ public:
     return peek().has_value();
   }
 
-  std::optional<Lexeme> peek() {
-    lex_all();
-    if (lexeme_queue.empty()) {
-      return std::nullopt;
-    }
-    return lexeme_queue.front();
+  std::optional<Token*> peek() {
+    return peek(0);
   }
 
-  std::optional<Lexeme> next() {
-    std::optional<Lexeme> lexeme = peek();
+  std::optional<Token*> peek(int i) {
+    lex_all();
+    if (lexeme_deque.size() <= i) {
+      return std::nullopt;
+    }
+    return lexeme_deque[i];
+  }
+
+  // true if there are at least n lexemes in the stream to be processed
+  bool awaiting(uint32_t n) {
+    lex_all();
+    return lexeme_deque.size() >= n;
+  }
+
+  std::optional<Token*> next() {
+    std::optional<Token*> lexeme = peek();
     if (lexeme.has_value()) {
-      lexeme_queue.pop();
+      lexeme_deque.pop_front();
     }
     return lexeme;
   }
 
 private:
-  std::queue<Lexeme> lexeme_queue;
+  std::deque<Token*> lexeme_deque;
 
   int lex_all() {
     int count = 0;
-    std::optional<Lexeme> next_lexeme;
+    std::optional<Token*> next_lexeme;
     while (!istream.eof()) {
       next_lexeme = lex_next();
-      if (next_lexeme.has_value()) lexeme_queue.push(*next_lexeme);
+      if (next_lexeme.has_value()) lexeme_deque.push_back(*next_lexeme);
       count++;
     }
     return count;
   }
 
-  std::optional<Lexeme> lex_next() {
+  std::optional<Token*> lex_next() {
     std::string literal;
     skip_whitespace();
 
@@ -118,7 +128,7 @@ private:
       return std::nullopt;
     }
 
-    return Lexeme(not_num ? Lexeme::Type::identifier : Lexeme::Type::number, 0, 0, literal);
+    return new Token(not_num ? Token::Type::identifier : Token::Type::number, literal, 0, 0);
   }
 
 
