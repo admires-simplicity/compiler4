@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdint>
 #include <optional>
+#include <sstream>
 
 #include "lexer.h"
 #include "parser.h"
@@ -61,6 +62,10 @@ int main() {
     // while (lexer.nonempty()) {
     //     std::cout << lexer.next().value().literal << std::endl;
     // }
+
+    Lexer lexer2(std::istringstream("3 > 4 + 5 * 6"));
+    std::cout << "lexer2: " << std::endl;
+    std::cout << Parser(lexer2).parse()->to_string() << std::endl;
 
     SyntaxNode *parsed = Parser(lexer).parse();
     std::cout << "\nparsed: " << std::endl;

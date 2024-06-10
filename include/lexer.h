@@ -24,9 +24,10 @@ public:
 
 class Lexer {
 public:
-  std::istream &istream;
+  std::istream& istream;
 
-  Lexer(std::istream &istream) : istream(istream) {}
+  Lexer(std::istream& istream) : istream(istream) {}
+  Lexer(std::istream&& istream) : istream(istream) {}
 
   bool nonempty() {
     return peek().has_value();
