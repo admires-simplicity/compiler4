@@ -98,45 +98,88 @@ private:
   // }
 
 
-  //THIS ALMOST WORKS.......
-  // this function is called "increasing_precedence" but its actually non-decreasing
-  SyntaxNode *parse_increasing_precedence(uint32_t min_precedence, SyntaxNode* left) {
+  // //THIS ALMOST WORKS.......
+  // SyntaxNode *parse_increasing_precedence(uint32_t min_precedence, SyntaxNode* left) {
+  //   if (!lexer.awaiting(2)
+  //     || !bin_ops.contains(lexer.peek().value()->literal)
+  //     || op_precedence(lexer.peek().value()->literal) < min_precedence) {
+  //     return left;
+  //   }
+
+  //   Token* op = lexer.next().value();
+  //   //SyntaxNode* right = parse(op_precedence(op->literal));
+  //   SyntaxNode* right = parse_increasing_precedence(op_precedence(op->literal), new SyntaxNode(lexer.next().value()));
+  //   return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
+  // }
+
+  // SyntaxNode *parse_increasing_precedence(uint32_t min_precedence) {
+  //   if (!lexer.peek()) return nullptr;
+  //   SyntaxNode *left = new SyntaxNode(lexer.next().value());
+  //   if (!lexer.awaiting(2)
+  //     //should maybe handle !awaiting(1) and !awaiting(2) differently (?)
+  //     || !bin_ops.contains(lexer.peek().value()->literal)
+  //     || op_precedence(lexer.peek().value()->literal) < min_precedence) {
+  //     return left;
+  //   }
+    
+  //   Token* op = lexer.next().value();
+  //   SyntaxNode* right = parse_increasing_precedence(op_precedence(op->literal));
+  //   return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
+  // }
+
+  // SyntaxNode *parse(uint32_t min_precedence) {
+  //   if (!lexer.peek()) return nullptr;
+  //   SyntaxNode *left = new SyntaxNode(lexer.next().value());
+  //   if (!lexer.awaiting(1)
+  //     || !bin_ops.contains(lexer.peek().value()->literal)
+  //     || op_precedence(lexer.peek().value()->literal) < min_precedence) {
+  //     return left;
+  //   }
+
+
+  //   while (true) {
+  //     left = parse_increasing_precedence(min_precedence);
+  //     if (!lexer.awaiting(2) || !bin_ops.contains(lexer.peek().value()->literal)) {
+  //       break;
+  //     }
+  //     Token *op = lexer.next().value();
+  //     // min_precedence = op_precedence(op->literal);
+  //     // //SyntaxNode *right = new SyntaxNode(lexer.next().value());
+  //     //SyntaxNode *right = parse_increasing_precedence(min_precedence, new SyntaxNode(lexer.next().value()));     
+  //     //SyntaxNode *right = parse(op_precedence(op->literal) + 1);
+
+  //     //SyntaxNode *right = parse_increasing_precedence(min_precedence + 1, new SyntaxNode(lexer.next().value()));
+
+  //     SyntaxNode *right = parse_increasing_precedence(min_precedence + 1);
+
+  //     left = new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
+  //   }
+  //   return left;
+  // }
+
+
+  SyntaxNode *parse_increasing_precedence(uint32_t min_precedence) {
+    SyntaxNode *left = new SyntaxNode(lexer.next().value());
     if (!lexer.awaiting(2)
       || !bin_ops.contains(lexer.peek().value()->literal)
       || op_precedence(lexer.peek().value()->literal) < min_precedence) {
       return left;
     }
-
-    Token* op = lexer.next().value();
-    //SyntaxNode* right = parse(op_precedence(op->literal));
-    SyntaxNode* right = parse_increasing_precedence(op_precedence(op->literal), new SyntaxNode(lexer.next().value()));
+    Token *op = lexer.next().value();
+    SyntaxNode *right = parse_increasing_precedence(op_precedence(op->literal) + 1);
     return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
   }
 
   SyntaxNode *parse(uint32_t min_precedence) {
-    if (!lexer.peek()) return nullptr;
-    SyntaxNode *left = new SyntaxNode(lexer.next().value());
-    if (!lexer.awaiting(1)
-      || !bin_ops.contains(lexer.peek().value()->literal)
-      || op_precedence(lexer.peek().value()->literal) < min_precedence) {
-      return left;
-    }
-
-
-    while (true) {
-      left = parse_increasing_precedence(min_precedence, left);
-      if (!lexer.awaiting(2) || !bin_ops.contains(lexer.peek().value()->literal)) {
-        break;
-      }
+    SyntaxNode *left = parse_increasing_precedence(min_precedence + 1);
+    while (lexer.awaiting(2) && bin_ops.contains(lexer.peek().value()->literal)) {
       Token *op = lexer.next().value();
-      // min_precedence = op_precedence(op->literal);
-      // //SyntaxNode *right = new SyntaxNode(lexer.next().value());
-      // SyntaxNode *right = parse_increasing_precedence(min_precedence, new SyntaxNode(lexer.next().value()));
-      SyntaxNode *right = parse(op_precedence(op->literal) + 1);
+      SyntaxNode *right = parse_increasing_precedence(op_precedence(op->literal) + 1);
       left = new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
     }
     return left;
   }
+
 
 
 
