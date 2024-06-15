@@ -71,6 +71,12 @@ public:
   }
 
 private:
+
+    // parses monotonic increasing precedence:
+    // strictly increasing sequences parsed through the indirect recursive call
+    // to parse_increasing_precedence within parse, giving right-leaning
+    // (right-associative) trees, constant sequences parsed within the current
+    // superordinate parse call, giving left-leaning (left-associative) trees.
     SyntaxNode *parse_increasing_precedence(uint32_t min_precedence) {
     SyntaxNode *left = new SyntaxNode(lexer.next().value());
     if (!lexer.awaiting(2)
@@ -79,12 +85,12 @@ private:
       return left;
     }
     Token *op = lexer.next().value();
-    SyntaxNode *right = parse(op_precedence(op->literal));
+    SyntaxNode *right = parse(op_precedence(op->literal) + 1);
     return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
   }
 
   SyntaxNode *parse(uint32_t min_precedence) {
-    SyntaxNode *left = new SyntaxNode(lexer.next().value());
+    SyntaxNode *left = parse_increasing_precedence(min_precedence);
     if (!lexer.awaiting(2)
       || !bin_ops.contains(lexer.peek().value()->literal)
       || op_precedence(lexer.peek().value()->literal) < min_precedence) {
@@ -98,7 +104,7 @@ private:
     return left;
   }
 
-
+};
 
 
 
