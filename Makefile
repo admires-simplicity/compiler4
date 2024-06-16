@@ -17,6 +17,17 @@ OTHER_EXECUTABLES := $(patsubst $(SRC_DIR)/%.cpp,%,$(OTHER_SOURCES))
 CXX := g++
 CXXFLAGS := -std=c++20 -I$(INCLUDE_DIR)
 
+# Debug and Release flags
+DEBUG_FLAGS := -g -O0
+RELEASE_FLAGS := -O2
+
+# Default to release build
+ifeq ($(DEBUG), 1)
+	CXXFLAGS += $(DEBUG_FLAGS)
+else
+	CXXFLAGS += $(RELEASE_FLAGS)
+endif
+
 # Rule for creating object files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@

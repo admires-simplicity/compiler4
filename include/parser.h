@@ -64,45 +64,46 @@ public:
   Parser(Lexer lexer) : lexer(lexer) {}
 
   SyntaxNode *parse() {
-    //return parse_decreasing_precedence(0);
-    //return right_leaning_crappy_parser();
-    return parse(0);
-    //return nullptr;
+    if (lexer.awaiting(3)) {
+      return parse_expr(0);
+    } else {
+      return parse_value(); // maybe should handle error if !lexer.awaiting(1)
+    }
   }
 
 private:
+  SyntaxNode *parse_value() {
+    return new SyntaxNode(lexer.next().value());
+  }
 
-    // parses monotonic increasing precedence:
-    // strictly increasing sequences parsed through the indirect recursive call
-    // to parse_increasing_precedence within parse, giving right-leaning
-    // (right-associative) trees, constant sequences parsed within the current
-    // superordinate parse call, giving left-leaning (left-associative) trees.
-    SyntaxNode *parse_increasing_precedence(uint32_t min_precedence) {
-    SyntaxNode *left = new SyntaxNode(lexer.next().value());
+  SyntaxNode *parse_increasing_precedence(SyntaxNode* left, uint32_t min_precedence) {
     if (!lexer.awaiting(2)
       || !bin_ops.contains(lexer.peek().value()->literal)
-      || op_precedence(lexer.peek().value()->literal) < min_precedence) {
+      || op_precedence(lexer.peek().value()->literal) <= min_precedence) {
       return left;
     }
     Token *op = lexer.next().value();
-    SyntaxNode *right = parse(op_precedence(op->literal) + 1);
+    SyntaxNode *right = parse_expr(op_precedence(op->literal)); //(1)
     return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
   }
-
-  SyntaxNode *parse(uint32_t min_precedence) {
-    SyntaxNode *left = parse_increasing_precedence(min_precedence);
-    if (!lexer.awaiting(2)
-      || !bin_ops.contains(lexer.peek().value()->literal)
-      || op_precedence(lexer.peek().value()->literal) < min_precedence) {
-      return left;
-    }
-    while (lexer.awaiting(2) && bin_ops.contains(lexer.peek().value()->literal)) {
-      Token *op = lexer.next().value();
-      SyntaxNode *right = parse_increasing_precedence(op_precedence(op->literal) + 1);
-      left = new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
+  
+  SyntaxNode *parse_expr(uint32_t min_precedence) {
+    SyntaxNode *left = parse_value();
+    while (true) {
+      SyntaxNode* next = parse_increasing_precedence(left, min_precedence); // (2)
+      if (next == left) break;
+      left = next;
     }
     return left;
   }
+
+  // (1) parse_expr calls parse_increase_precedence, so it will only parse
+  // operators of higher precedence than the current operator --> all
+  // sub-operators in right will be of higher precedence than op.
+
+  // (2) this makes a left-leaning tree, because everything that has been
+  // parsed so far is used as the left of the tree built in
+  // parse_increasing_precedence
 
 };
 
