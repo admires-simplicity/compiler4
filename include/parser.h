@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <map>
+#include <cassert>
 #include "lexer.h"
 #include "AST.h"
 
@@ -34,21 +35,30 @@ std::set<std::string> bin_ops = {
   "<",
   ">",
   "+",
+  "-",
   "*",
+  "/",
+  //"^",
 };
 
 std::map<std::string, uint32_t> syntax_ids = {
   {"<", 8},
   {">", 9},
   {"+", 10},
-  {"*", 11},
+  {"-", 11},
+  {"*", 12},
+  {"/", 13},
+  //{"^", 14},
 };
 
 std::map<uint32_t, BinPrecedence> binary_precedence = {
-  {8, {Assoc::left, 4}},
+  {8, {Assoc::left, 5}},
   {9, {Assoc::left, 5}},
-  {10, {Assoc::left, 6}},
-  {11, {Assoc::left, 7}},
+  {10, {Assoc::left, 10}},
+  {11, {Assoc::left, 10}},
+  {12, {Assoc::left, 15}},
+  {13, {Assoc::left, 15}},
+  //{14, {Assoc::right, 20}},
 };
 
 uint32_t op_precedence(std::string op) {
@@ -64,16 +74,33 @@ public:
   Parser(Lexer lexer) : lexer(lexer) {}
 
   SyntaxNode *parse() {
-    if (lexer.awaiting(3)) {
-      return parse_expr(0);
-    } else {
-      return parse_value(); // maybe should handle error if !lexer.awaiting(1)
-    }
+    return parse_expr(0);
   }
 
 private:
+  uint16_t nesting = 0;
+
+  // this function is a slight misnomer, since "value" for parens is actually
+  // the whole expression /  syntax tree...
   SyntaxNode *parse_value() {
-    return new SyntaxNode(lexer.next().value());
+    Token *tkn = lexer.next().value();
+    SyntaxNode *val = nullptr;
+    if (tkn->literal == "(") {
+      uint16_t nest = nesting;
+      ++nesting;
+      val = parse();
+      Token *nxt = lexer.next().value(); // advance / skip ")"
+      --nesting;
+      assert(nxt->literal == ")");
+      assert(nesting == nest);
+    } else if (tkn->literal == ")") {
+      // error for now, maybe unit or something in the future...
+      --nesting;
+      return nullptr;
+    } else {
+      val = new SyntaxNode(tkn);
+    }
+    return val;
   }
 
   SyntaxNode *parse_increasing_precedence(SyntaxNode* left, uint32_t min_precedence) {
@@ -89,6 +116,7 @@ private:
   
   SyntaxNode *parse_expr(uint32_t min_precedence) {
     SyntaxNode *left = parse_value();
+
     while (true) {
       SyntaxNode* next = parse_increasing_precedence(left, min_precedence); // (2)
       if (next == left) break;

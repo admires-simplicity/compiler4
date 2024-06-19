@@ -73,4 +73,6 @@ int main() {
     else std::cout << "null" << std::endl;
 
     return 0;
+
+    /// TODO: add unary ops + and - and add right associativity to ^
 }
