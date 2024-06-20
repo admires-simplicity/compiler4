@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
     // plus test
     {"1 + 2", {"(+ (1) (2))"}},
     
-    // + * assoc test
+    // + * assoc tests
     {"1 + 2 + 3", "(+ (+ (1) (2)) (3))"},
     {"1 * 2 + 3", "(+ (* (1) (2)) (3))"},
     {"1 + 2 * 3", "(+ (1) (* (2) (3)))"},
@@ -121,7 +121,18 @@ int main(int argc, char** argv) {
 
     // various + - * / tests
     {"1 + 2 - 3 * 4 / 5 + 6", "(+ (- (+ (1) (2)) (/ (* (3) (4)) (5))) (6))"},
+    {"1 - 2 + 3 / 4 * 5 - 6", "(- (+ (- (1) (2)) (* (/ (3) (4)) (5))) (6))"},
     {"1 / 2 - 3 + 4 - 5 * 6", "(- (+ (- (/ (1) (2)) (3)) (4)) (* (5) (6)))"},
+    {"1 * 2 + 3 - 4 + 5 / 6", "(+ (- (+ (* (1) (2)) (3)) (4)) (/ (5) (6)))"},
+
+    // unary - ! tests
+    {"- 1", "(- (1))"},
+    {"- 1 + 2", "(+ (- (1)) (2))"},
+    {"1 + - 2", "(+ (1) (- (2)))"},
+    {"- (1 + 2)", "(- (+ (1) (2)))"},
+    // so far we have to have a space between op and val because lexer doesn't
+    // parse ops as seperate lexical entities, e.g. "-1" is lexed as "-1"
+    // instead of "-", "1"
   };
 
   // const std::vector<test_case> test_cases = {

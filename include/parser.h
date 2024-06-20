@@ -51,6 +51,12 @@ std::map<std::string, uint32_t> syntax_ids = {
   //{"^", 14},
 };
 
+std::set<std::string> prefix_ops = {
+  "-",
+  //"+",
+  "!",
+};
+
 std::map<uint32_t, BinPrecedence> binary_precedence = {
   {8, {Assoc::left, 5}},
   {9, {Assoc::left, 5}},
@@ -82,6 +88,7 @@ private:
 
   // this function is a slight misnomer, since "value" for parens is actually
   // the whole expression /  syntax tree...
+  // as well as handling prefix ops
   SyntaxNode *parse_value() {
     Token *tkn = lexer.next().value();
     SyntaxNode *val = nullptr;
@@ -97,6 +104,8 @@ private:
       // error for now, maybe unit or something in the future...
       --nesting;
       return nullptr;
+    } else if (prefix_ops.contains(tkn->literal)) {
+      val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_value()});
     } else {
       val = new SyntaxNode(tkn);
     }
