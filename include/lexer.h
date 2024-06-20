@@ -133,7 +133,12 @@ private:
   }
 
 
-  std::set<char> syntax_chars = {'(', ')', '[', ']', '.', ',', ';', '\n'};
+  std::set<char> syntax_chars = {'(', ')', '[', ']', '.', ',', ';', '\n',
+    // // arithmetic ops
+    // '-', '+', '*', '/', '>', '<', '^', '=', 
+    // // logical ops
+    // '!',
+  };
 
   // std::set<std::string> reserved_lexemes = { // lexemes that cannot be within identifiers
   //   "(", ")", "[", "]", "+", "*", ".", ";",

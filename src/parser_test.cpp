@@ -130,9 +130,7 @@ int main(int argc, char** argv) {
     {"- 1 + 2", "(+ (- (1)) (2))"},
     {"1 + - 2", "(+ (1) (- (2)))"},
     {"- (1 + 2)", "(- (+ (1) (2)))"},
-    // so far we have to have a space between op and val because lexer doesn't
-    // parse ops as seperate lexical entities, e.g. "-1" is lexed as "-1"
-    // instead of "-", "1"
+    // can't do "-1" because '-' is not a syntax char
   };
 
   // const std::vector<test_case> test_cases = {
