@@ -74,5 +74,5 @@ int main() {
 
     return 0;
 
-    /// TODO: add unary ops + and - and add right associativity to ^
+    /// TODO: add right associativity to ^
 }

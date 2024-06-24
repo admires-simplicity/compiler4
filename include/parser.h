@@ -38,7 +38,7 @@ std::set<std::string> bin_ops = {
   "-",
   "*",
   "/",
-  //"^",
+  "^",
 };
 
 std::map<std::string, uint32_t> syntax_ids = {
@@ -48,13 +48,13 @@ std::map<std::string, uint32_t> syntax_ids = {
   {"-", 11},
   {"*", 12},
   {"/", 13},
-  //{"^", 14},
+  {"^", 14},
 };
 
 std::set<std::string> prefix_ops = {
   "-",
   //"+",
-  "!",
+  //"!",
 };
 
 std::map<uint32_t, BinPrecedence> binary_precedence = {
@@ -64,7 +64,7 @@ std::map<uint32_t, BinPrecedence> binary_precedence = {
   {11, {Assoc::left, 10}},
   {12, {Assoc::left, 15}},
   {13, {Assoc::left, 15}},
-  //{14, {Assoc::right, 20}},
+  {14, {Assoc::right, 20}},
 };
 
 uint32_t op_precedence(std::string op) {
@@ -86,9 +86,8 @@ public:
 private:
   uint16_t nesting = 0;
 
-  // this function is a slight misnomer, since "value" for parens is actually
-  // the whole expression /  syntax tree...
-  // as well as handling prefix ops
+  // this function is a slight misnomer, since it handles parens and prefix ops
+  // the "value" part is just the first line, `tkn = lexer.next().value()`
   SyntaxNode *parse_value() {
     Token *tkn = lexer.next().value();
     SyntaxNode *val = nullptr;
@@ -112,10 +111,20 @@ private:
     return val;
   }
 
+  // true if precedence(op) > precedence(last_op)
+  // last_op being whichever op gave us min_precedence -- maybe we should just
+  // change this so we pass the op itself.
+  bool op_cmp(std::string op, uint32_t min_precedence) {
+    auto [assoc, precedence] = binary_precedence[syntax_ids[op]];
+    return assoc == Assoc::left && precedence <= min_precedence;
+  }
+
   SyntaxNode *parse_increasing_precedence(SyntaxNode* left, uint32_t min_precedence) {
     if (!lexer.awaiting(2)
       || !bin_ops.contains(lexer.peek().value()->literal)
-      || op_precedence(lexer.peek().value()->literal) <= min_precedence) {
+      || op_cmp(lexer.peek().value()->literal, min_precedence)
+      //(lexer.peek().value()->literal) <= min_precedenc
+      ) {
       return left;
     }
     Token *op = lexer.next().value();

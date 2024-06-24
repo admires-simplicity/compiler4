@@ -1,1 +1,5 @@
 TODO: add some way to set syntax chars
+
+I'm not sure if I want 'logical negation' to be represented by '!' or 'not'.
+I'm thinking of including ! on ints as well as not on bools. For logic using 
+ints we can just do 'if nonzero x' or something.
