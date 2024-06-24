@@ -9,6 +9,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "AST.h"
+#include "Cemitter.h"
 
 int main() {
     // Token *rootToken = new Token(Token::Type::multiply, "*", 0, 0);
@@ -71,6 +72,8 @@ int main() {
     std::cout << "\nparsed: " << std::endl;
     if (parsed) std::cout << parsed->to_string() << std::endl;
     else std::cout << "null" << std::endl;
+
+    if (parsed) emit(parsed);
 
     return 0;
 
