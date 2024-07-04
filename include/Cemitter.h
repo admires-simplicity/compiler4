@@ -24,7 +24,7 @@ bool emit(SyntaxNode *node) {
     emit_literal(node);
   } else if (c_infix_ops.contains(node->token->literal)) {
     if (node->children.size() != 2) {
-      std::cerr << "Error: infix operator " << node->token->literal << " must have exactly 2 children\n";
+      std::cerr << "<CEmitter> Error: infix operator " << node->token->literal << " must have exactly 2 children\n";
       return false;
     }
     std::cout << "(";
@@ -33,7 +33,7 @@ bool emit(SyntaxNode *node) {
     emit(node->children[1]);
     std::cout << ")";
   } else {
-    std::cerr << "Error: unhandled node type " << node->token->literal << "\n";
+    std::cerr << "<CEmitter> Error: unhandled node type " << node->token->literal << "\n";
     return false;
   }
   return true;

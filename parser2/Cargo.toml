@@ -1,0 +1,5 @@
+[package]
+name = "parser2"
+version = "0.1.0"
+authors = ["Cool Guy <albert.einstein@google.com>"]
+edition = "2018"

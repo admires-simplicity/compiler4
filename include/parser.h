@@ -39,9 +39,12 @@ std::set<std::string> bin_ops = {
   "*",
   "/",
   "^",
+  ":"
 };
 
 std::map<std::string, uint32_t> syntax_ids = {
+  {"fn", 6},
+  {":", 7},
   {"<", 8},
   {">", 9},
   {"+", 10},
@@ -55,9 +58,18 @@ std::set<std::string> prefix_ops = {
   "-",
   //"+",
   //"!",
+  "fn",
+};
+
+std::map<uint32_t, uint32_t> unary_precedence = {
+  {11, 15},
+  // {12, 15},
+  // {13, 15},
+  {14, 15},
 };
 
 std::map<uint32_t, BinPrecedence> binary_precedence = {
+  {7, {Assoc::right, 3}},
   {8, {Assoc::left, 5}},
   {9, {Assoc::left, 5}},
   {10, {Assoc::left, 10}},
@@ -152,6 +164,13 @@ private:
   // parse_increasing_precedence
 
 };
+
+
+
+
+// idea for optimizing parser:
+// instead of checking `token == str`, for a bunch of strings, we could do
+// something like `int parse_rule = trie[token]`, and switch on those...
 
 
 
