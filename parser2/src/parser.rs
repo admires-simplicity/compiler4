@@ -66,6 +66,16 @@ pub fn expr(input: &str) -> S {
 fn expr_bp(lexer: &mut Lexer, min_bp: u8) -> S {
     let mut lhs = match lexer.next() {
         Token::Atom(it) => S::Atom(it),
+        Token::Op('(') => {
+            let lhs = expr_bp(lexer, 0);
+            assert_eq!(lexer.next(), Token::Op(')'));
+            lhs
+        }
+        Token::Op(op) => {
+            let ((), r_bp) = prefix_binding_power(op);
+            let rhs = expr_bp(lexer, r_bp);
+            S::Cons(op, vec![rhs])
+        }
         t => panic!("bad token: {:?}", t),
     };
 
@@ -76,27 +86,73 @@ fn expr_bp(lexer: &mut Lexer, min_bp: u8) -> S {
             t => panic!("bad token: {:?}", t),
         };
 
-        let (l_bp, r_bp) = infix_binding_power(op);
-        if l_bp < min_bp {
-            break;
+        if let Some((l_bp, ())) = postfix_binding_power(op) {
+            if l_bp < min_bp {
+                break;
+            }
+            lexer.next();
+
+            lhs = if op == '[' {
+                let rhs = expr_bp(lexer, 0);
+                assert_eq!(lexer.next(), Token::Op(']'));
+                S::Cons(op, vec![lhs, rhs])
+            } else {
+                S::Cons(op, vec![lhs])
+            };
+            continue;
         }
+        
 
-        lexer.next();
-        let rhs = expr_bp(lexer, r_bp);
+        if let Some((l_bp, r_bp)) = infix_binding_power(op) {
+            if l_bp < min_bp {
+                break;
+            }
+    
+            lexer.next();
 
-        lhs = S::Cons(op, vec![lhs, rhs]);
+            lhs = if op == '?' {
+                let mhs = expr_bp(lexer, 0);
+                assert_eq!(lexer.next(), Token::Op(':'));
+                let rhs = expr_bp(lexer, r_bp);
+                S::Cons(op, vec![lhs, mhs, rhs])
+            } else {
+                let rhs = expr_bp(lexer, r_bp);
+                S::Cons(op, vec![lhs, rhs])    
+            };
+            continue;
+        }
+        
+        break;
     }
 
     lhs
 }
 
-fn infix_binding_power(op:char) -> (u8, u8) {
+fn prefix_binding_power(op: char) -> ((), u8) {
     match op {
-        '+' | '-' => (1, 2),
-        '*' | '/' => (3, 4),
-        _ => panic!("bad op: {:?}", op)
+        '+' | '-' => ((), 9),
+        _ => panic!("bad op: {:?}", op),    
     }
+}
 
+fn postfix_binding_power(op: char) -> Option<(u8, ())> {
+    let res = match op {
+        '!' | '[' => (11, ()), // tutorial says "this doesn't introduce ambiguity" but I can't understand the argument
+        _ => return None,
+    };
+    Some(res)
+}
+
+fn infix_binding_power(op:char) -> Option<(u8, u8)> {
+    let res = match op {
+        '=' => (2, 1),
+        '?' => (4, 3),
+        '+' | '-' => (5, 6),
+        '*' | '/' => (7, 8),
+        '.' => (14, 13),
+        _ => return None,
+    };
+    Some(res)
 }
 
 #[test]
@@ -104,10 +160,44 @@ pub fn tests() {
     let s = expr("1");
     assert_eq!(s.to_string(), "1");
     
+    let s = expr("1+2");
+    assert_eq!(s.to_string(), "(+ 1 2)");
+
     let s = expr("1 + 2 * 3");
     assert_eq!(s.to_string(), "(+ 1 (* 2 3))");
 
     let s = expr("a + b * c * d + e");
     assert_eq!(s.to_string(), "(+ (+ a (* (* b c) d)) e)");
+
+    let s = expr("f . g . h");
+    assert_eq!(s.to_string(), "(. f (. g h))");
+
+    let s = expr("1 + 2 + f . g . h * 3 * 4");
+    assert_eq!(s.to_string(), "(+ (+ 1 2) (* (* (. f (. g h)) 3) 4))");
+
+    let s = expr("--1 * 2");
+    assert_eq!(s.to_string(), "(* (- (- 1)) 2)");
+
+    let s = expr("--f . g");
+    assert_eq!(s.to_string(), "(- (- (. f g)))");
+
+    let s = expr("-9!");
+    assert_eq!(s.to_string(), "(- (! 9))");
+
+    let s = expr("f . g !");
+    assert_eq!(s.to_string(), "(! (. f g))");
+
+    let s = expr("(1 + 1)");
+    assert_eq!(s.to_string(), "(+ 1 1)");
+
+    let s = expr(
+        "a ? b :
+         c ? d
+         : e",
+    );
+    assert_eq!(s.to_string(), "(? a b (? c d e))");
+
+    let s = expr("a = 0 ? b : c = d");
+    assert_eq!(s.to_string(), "(= a (= (? 0 b c) d))")
 }
 

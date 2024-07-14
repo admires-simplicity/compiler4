@@ -20,4 +20,15 @@ fn main() {
     let s = parser::expr("1 * 2 + 3");
     println!("{}", s);
 
+    let s = parser::expr("(1)");
+    println!("{}", s);
+
+    let s = parser::expr("a[i]");
+    println!("{}", s);
+
+    let s = parser::expr("a![i]");
+    println!("{}", s);
+
+    let s = parser::expr("a[i]!");
+    println!("{}", s);
 }
