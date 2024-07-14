@@ -17,3 +17,6 @@ public:
 class UnaryPrecedence : Precedence {
 };
 
+int main() {
+  return 0;
+}

@@ -22,6 +22,4 @@ int main() {
     if (parsed) emit(parsed);
 
     return 0;
-
-    /// TODO: add right associativity to ^
 }

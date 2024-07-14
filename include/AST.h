@@ -24,6 +24,8 @@ public:
   }
 
   std::string to_string() {
+    if (children.size() == 0) return canonical_token_repr();
+    
     std::string s = "";
     s += "(";
     s += canonical_token_repr();
