@@ -39,12 +39,17 @@ std::set<std::string> bin_ops = {
   "*",
   "/",
   "^",
-  ":"
+  "=",
+  ",",
+  ":",
+  "->"
 };
 
 std::map<std::string, uint32_t> syntax_ids = {
-  {"fn", 6},
-  {":", 7},
+  {"=", 1},
+  {"->", 2},
+  {",", 3},
+  {":", 4},
   {"<", 8},
   {">", 9},
   {"+", 10},
@@ -69,6 +74,11 @@ std::map<uint32_t, uint32_t> unary_precedence = {
 };
 
 std::map<uint32_t, BinPrecedence> binary_precedence = {
+  {1, {Assoc::left, 1}},
+  {2, {Assoc::right, 2}},
+  {3, {Assoc::right, 3}},
+  {4, {Assoc::right, 4}},
+
   {7, {Assoc::right, 3}},
   {8, {Assoc::left, 5}},
   {9, {Assoc::left, 5}},
