@@ -74,6 +74,11 @@ std::map<uint32_t, uint32_t> unary_precedence = {
 };
 
 std::map<uint32_t, BinPrecedence> binary_precedence = {
+  {0, {Assoc::left, 0}}, // "Null" operator -- not actually a valid operator
+  // but we need an op to compare to when we start parsing. "left" precedence
+  // doesn't matter because precedence only matters when comparing identical
+  // operators, and we should never have id = 0.
+
   {1, {Assoc::left, 1}},
   {2, {Assoc::right, 2}},
   {3, {Assoc::right, 3}},
@@ -133,32 +138,37 @@ private:
     return val;
   }
 
-  // true if precedence(op) > precedence(last_op)
-  // last_op being whichever op gave us min_precedence -- maybe we should just
-  // change this so we pass the op itself.
-  bool op_cmp(std::string op, uint32_t min_precedence) {
-    auto [assoc, precedence] = binary_precedence[syntax_ids[op]];
-    return assoc == Assoc::left && precedence <= min_precedence;
+  // true if current operator can bind value as its left operator
+  //      otherwise value binds as right of last operator
+  bool can_bind_left(uint32_t current_op_id, uint32_t last_op_id) {
+    // auto [assoc, precedence] = binary_precedence[syntax_ids[op]];
+    // return assoc == Assoc::left && precedence <= min_precedence;
+    auto [curr_assoc, curr_precedence] = binary_precedence[current_op_id];
+    auto [last_assoc, last_precedence] = binary_precedence[last_op_id];
+    if (current_op_id == last_op_id) {
+      return curr_assoc == Assoc::right; // right assoc op can take left operand
+    } else {
+      return curr_precedence > last_precedence;
+    }
   }
 
-  SyntaxNode *parse_increasing_precedence(SyntaxNode* left, uint32_t min_precedence) {
-    if (!lexer.awaiting(2)
-      || !bin_ops.contains(lexer.peek().value()->literal)
-      || op_cmp(lexer.peek().value()->literal, min_precedence)
-      //(lexer.peek().value()->literal) <= min_precedenc
+  SyntaxNode *parse_increasing_precedence(SyntaxNode* left, uint32_t last_op_id) {
+    if (!lexer.awaiting(2) // don't have an op and value
+      || !bin_ops.contains(lexer.peek().value()->literal) // next lexeme is not an op
+      || !can_bind_left(syntax_ids[lexer.peek().value()->literal], last_op_id) // next op has lower precedence than last op
       ) {
       return left;
     }
     Token *op = lexer.next().value();
-    SyntaxNode *right = parse_expr(op_precedence(op->literal)); //(1)
+    SyntaxNode *right = parse_expr(syntax_ids[op->literal]); //(1)
     return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
   }
   
-  SyntaxNode *parse_expr(uint32_t min_precedence) {
+  SyntaxNode *parse_expr(uint32_t last_op_id) {
     SyntaxNode *left = parse_value();
 
     while (true) {
-      SyntaxNode* next = parse_increasing_precedence(left, min_precedence); // (2)
+      SyntaxNode* next = parse_increasing_precedence(left, last_op_id); // (2)
       if (next == left) break;
       left = next;
     }
