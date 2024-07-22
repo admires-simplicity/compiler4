@@ -57,6 +57,8 @@ std::map<std::string, uint32_t> syntax_ids = {
   {"*", 12},
   {"/", 13},
   {"^", 14},
+  {"(", 100},
+  {"{", 102},
 };
 
 std::set<std::string> prefix_ops = {
@@ -113,28 +115,50 @@ public:
 private:
   uint16_t nesting = 0;
 
+  SyntaxNode *parse_parens() {
+    Token *tkn = lexer.next().value();
+    assert(tkn->literal == "(");
+    uint16_t nest = nesting;
+    ++nesting;
+    SyntaxNode *val = parse();
+    Token *nxt = lexer.next().value(); // advance / skip ")"
+    --nesting;
+    assert(nxt->literal == ")");
+    assert(nesting == nest);
+    return val;
+  }
+
   // this function is a slight misnomer, since it handles parens and prefix ops
   // the "value" part is just the first line, `tkn = lexer.next().value()`
   SyntaxNode *parse_value() {
-    Token *tkn = lexer.next().value();
+    Token *tkn = lexer.peek().value();
     SyntaxNode *val = nullptr;
     if (tkn->literal == "(") {
-      uint16_t nest = nesting;
-      ++nesting;
-      val = parse();
-      Token *nxt = lexer.next().value(); // advance / skip ")"
-      --nesting;
-      assert(nxt->literal == ")");
-      assert(nesting == nest);
+      val = parse_parens();
     } else if (tkn->literal == ")") {
       // error for now, maybe unit or something in the future...
-      --nesting;
+      //--nesting is handled in parse_parens
       return nullptr;
-    } else if (prefix_ops.contains(tkn->literal)) {
-      val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_value()});
     } else {
-      val = new SyntaxNode(tkn);
+      lexer.next(); // consume token
+      if (prefix_ops.contains(tkn->literal)) {
+        val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_value()});
+      } else {
+        val = new SyntaxNode(tkn);
+      }
     }
+
+    // now we have a value, we can check for postfix ops
+    std::optional<Token*> nxt = lexer.peek();
+    if (!nxt.has_value()) return val;
+
+    tkn = nxt.value();
+    if (tkn->literal == "(") { // switch this to a Trie representation...
+      SyntaxNode *args = parse_parens();
+      if (args) val = new SyntaxNode(new Token(Token::Type::apply), std::vector<SyntaxNode*>{val, args});
+      else      val = new SyntaxNode(new Token(Token::Type::apply), std::vector<SyntaxNode*>{val});
+    }
+
     return val;
   }
 

@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include <deque>
+#include <map>
 #include <optional>
 
 class Token {
@@ -11,14 +12,24 @@ public:
   enum class Type {
     identifier,
     number,
-    //syntax,
+    apply,
   };
+
+private:
+  std::map<Type, std::string> token_type_repr {
+    {Type::identifier, "identifier"},
+    {Type::number, "number"},
+    {Type::apply, "apply"},
+  };
+
+public:
 
   Type type;
   std::string literal;
   uint32_t line;
   uint32_t column;
 
+  Token(Type type) : type(type), literal(token_type_repr[type]) {}
   Token(Type type, std::string literal, uint32_t line, uint32_t column) : type(type), literal(literal), line(line), column(column) {}
 };
 

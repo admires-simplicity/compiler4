@@ -175,8 +175,11 @@ int main(int argc, char** argv) {
     {"(A : B, C : D)", "(, (: A B) (: C D))"},
     {"(A : B, C : D, E : F)", "(, (: A B) (, (: C D) (: E F)))"},
 
-    
-
+    // call tests
+    {"f()", "(apply f)"},
+    {"f(x)", "(apply f x)"},
+    {"f(x, y)", "(apply f (, x y))"},
+    {"f(x, y, z)", "(apply f (, x (, y z)))"},
  };
 
   // const std::vector<test_case> test_cases = {
