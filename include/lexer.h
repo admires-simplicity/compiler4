@@ -13,13 +13,15 @@ public:
     identifier,
     number,
     apply,
+    block,
   };
 
 private:
   std::map<Type, std::string> token_type_repr {
     {Type::identifier, "identifier"},
     {Type::number, "number"},
-    {Type::apply, "apply"},
+    {Type::apply, "apply"}, // TODO: apply and block should definitely not be here...
+    {Type::block, "block"}, 
   };
 
 public:

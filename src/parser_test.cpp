@@ -180,6 +180,27 @@ int main(int argc, char** argv) {
     {"f(x)", "(apply f x)"},
     {"f(x, y)", "(apply f (, x y))"},
     {"f(x, y, z)", "(apply f (, x (, y z)))"},
+    
+    // string tests
+    {"\"string\"", "\"string\""}, // this works trivially because I haven't actually made a distinction between identifiers and strings yet... lol
+
+    // printf test
+    {"printf(\"hello, world\")", "(apply printf \"hello, world\")"},
+    {"printf(\"display some number: %d\\n\", 123);", "(; (apply printf (, \"display some number: %d\\n\" 123)))"},
+
+    // parse semicolon
+    {"1 + 1;", "(; (+ 1 1))"},
+
+    // parse block
+    {"{ printf(\"first printf\\n\"); printf(\"second printf\\n\"); }", "(block (; (apply printf \"first printf\\n\")) (; (apply printf \"second printf\\n\")))"},
+    {"{ printf(\"first printf\\n\"); printf(\"second printf\\n\")  }", "(block (; (apply printf \"first printf\\n\")) (apply printf \"second printf\\n\"))"},
+    
+    // function type signature test
+    {"f(x : int, y : int) -> int", "(-> (apply f (, (: x int) (: y int))) int)"},
+
+    // function definition parse tests
+    {"f(x) = { x; }", "(= (apply f x) (block (; x)))"}, // TODO (maybe): change parser to use something like "defun" instead of "apply" ?
+    {"f(x : int, y : int) -> int = { x + y }", "(= (-> (apply f (, (: x int) (: y int))) int) (block (+ x y)))"},
  };
 
   // const std::vector<test_case> test_cases = {

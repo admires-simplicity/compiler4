@@ -59,6 +59,7 @@ std::map<std::string, uint32_t> syntax_ids = {
   {"^", 14},
   {"(", 100},
   {"{", 102},
+  {";", 110},
 };
 
 std::set<std::string> prefix_ops = {
@@ -66,6 +67,10 @@ std::set<std::string> prefix_ops = {
   //"+",
   //"!",
   "fn",
+};
+
+std::set<std::string> postfix_ops = {
+  ";",
 };
 
 std::map<uint32_t, uint32_t> unary_precedence = {
@@ -81,19 +86,20 @@ std::map<uint32_t, BinPrecedence> binary_precedence = {
   // doesn't matter because precedence only matters when comparing identical
   // operators, and we should never have id = 0.
 
-  {1, {Assoc::left, 1}},
-  {2, {Assoc::right, 2}},
-  {3, {Assoc::right, 3}},
-  {4, {Assoc::right, 4}},
+  {110, {Assoc::left, 1}},
+  
+  {1, {Assoc::left, 3}},
+  {2, {Assoc::right, 4}},
+  {3, {Assoc::right, 5}},
+  {4, {Assoc::right, 6}},
 
-  {7, {Assoc::right, 3}},
-  {8, {Assoc::left, 5}},
-  {9, {Assoc::left, 5}},
-  {10, {Assoc::left, 10}},
-  {11, {Assoc::left, 10}},
-  {12, {Assoc::left, 15}},
-  {13, {Assoc::left, 15}},
-  {14, {Assoc::right, 20}},
+  {8, {Assoc::left, 7}},
+  {9, {Assoc::left, 7}},
+  {10, {Assoc::left, 12}},
+  {11, {Assoc::left, 12}},
+  {12, {Assoc::left, 17}},
+  {13, {Assoc::left, 17}},
+  {14, {Assoc::right, 22}},
 };
 
 uint32_t op_precedence(std::string op) {
@@ -139,6 +145,14 @@ private:
       // error for now, maybe unit or something in the future...
       //--nesting is handled in parse_parens
       return nullptr;
+    } else if (tkn->literal == "{"){
+      lexer.next(); // consume token
+      std::vector<SyntaxNode*> children;
+      while (lexer.peek().value()->literal != "}") {
+        children.push_back(parse());
+      }
+      lexer.next(); // consume "}"
+      val = new SyntaxNode(new Token(Token::Type::block), children);
     } else {
       lexer.next(); // consume token
       if (prefix_ops.contains(tkn->literal)) {
@@ -158,6 +172,13 @@ private:
       if (args) val = new SyntaxNode(new Token(Token::Type::apply), std::vector<SyntaxNode*>{val, args});
       else      val = new SyntaxNode(new Token(Token::Type::apply), std::vector<SyntaxNode*>{val});
     }
+    //else if (tkn->literal == ";") {
+    //   lexer.next(); // consume
+    //   // for now, we'll just treat the whole expression as a statement
+    //   // if we decide to add an actual statement type, we'll might need to do
+    //   // something different here
+    // }
+    
 
     return val;
   }
@@ -171,21 +192,41 @@ private:
     auto [last_assoc, last_precedence] = binary_precedence[last_op_id];
     if (current_op_id == last_op_id) {
       return curr_assoc == Assoc::right; // right assoc op can take left operand
+    } else if (last_op_id == 0 && current_op_id == syntax_ids[";"]) {
+      return true; // kind of a hack
     } else {
       return curr_precedence > last_precedence;
     }
   }
 
   SyntaxNode *parse_increasing_precedence(SyntaxNode* left, uint32_t last_op_id) {
-    if (!lexer.awaiting(2) // don't have an op and value
-      || !bin_ops.contains(lexer.peek().value()->literal) // next lexeme is not an op
-      || !can_bind_left(syntax_ids[lexer.peek().value()->literal], last_op_id) // next op has lower precedence than last op
-      ) {
-      return left;
-    }
+    bool can_parse_postfix = false;
+    bool can_parse_binary = false;
+    if (!lexer.awaiting(1)) return left;
+
+    Token *nxt = lexer.peek().value();
+
+    if (postfix_ops.contains(lexer.peek().value()->literal)
+      && can_bind_left(syntax_ids[nxt->literal], last_op_id))
+      can_parse_postfix = true;
+
+    // check if we can parse a bin op
+    if (lexer.awaiting(2) // don't have an op and value
+      && bin_ops.contains(lexer.peek().value()->literal) // next lexeme is not an op
+      && can_bind_left(syntax_ids[lexer.peek().value()->literal], last_op_id)) // next op has lower precedence than last op      
+      can_parse_binary = true;
+    
+    if (!can_parse_postfix && !can_parse_binary) return left;
+    
+    //if (can_parse_postfix && can_parse_binary) {} // TODO: think about this problematic case
+
     Token *op = lexer.next().value();
-    SyntaxNode *right = parse_expr(syntax_ids[op->literal]); //(1)
-    return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
+    if (bin_ops.contains(op->literal)) {
+      SyntaxNode *right = parse_expr(syntax_ids[op->literal]); //(1)
+      return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
+    } else {
+      return new SyntaxNode(op, std::vector<SyntaxNode*>{left});
+    }
   }
   
   SyntaxNode *parse_expr(uint32_t last_op_id) {

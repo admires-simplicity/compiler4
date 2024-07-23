@@ -5,11 +5,10 @@
 
 class SyntaxNode {
 public:
-  enum class Type {
-    identifier,
-    literal,
-    apply,
-  };
+  // enum class Type {
+  //   identifier,
+  //   literal,
+  // };
 
   Token *token;
   std::vector<SyntaxNode *> children;
