@@ -60,6 +60,9 @@ std::map<std::string, uint32_t> syntax_ids = {
   {"(", 100},
   {"{", 102},
   {";", 110},
+  {"fn", 120},
+  {"let", 121},
+  {"var", 122},
 };
 
 std::set<std::string> prefix_ops = {
@@ -67,6 +70,8 @@ std::set<std::string> prefix_ops = {
   //"+",
   //"!",
   "fn",
+  "let",
+  "var",
 };
 
 std::set<std::string> postfix_ops = {
@@ -74,10 +79,14 @@ std::set<std::string> postfix_ops = {
 };
 
 std::map<uint32_t, uint32_t> unary_precedence = {
-  {11, 15},
+  {11, 19},
   // {12, 15},
   // {13, 15},
-  {14, 15},
+  {14, 19},
+
+  {120, 3},
+  {121, 3},
+  {122, 3},
 };
 
 std::map<uint32_t, BinPrecedence> binary_precedence = {
@@ -88,18 +97,18 @@ std::map<uint32_t, BinPrecedence> binary_precedence = {
 
   {110, {Assoc::left, 1}},
   
-  {1, {Assoc::left, 3}},
-  {2, {Assoc::right, 4}},
-  {3, {Assoc::right, 5}},
-  {4, {Assoc::right, 6}},
+  {1, {Assoc::left, 7}},
+  {2, {Assoc::right, 8}},
+  {3, {Assoc::right, 9}},
+  {4, {Assoc::right, 10}},
 
-  {8, {Assoc::left, 7}},
-  {9, {Assoc::left, 7}},
-  {10, {Assoc::left, 12}},
-  {11, {Assoc::left, 12}},
-  {12, {Assoc::left, 17}},
-  {13, {Assoc::left, 17}},
-  {14, {Assoc::right, 22}},
+  {8, {Assoc::left, 11}},
+  {9, {Assoc::left, 11}},
+  {10, {Assoc::left, 16}},
+  {11, {Assoc::left, 16}},
+  {12, {Assoc::left, 21}},
+  {13, {Assoc::left, 21}},
+  {14, {Assoc::right, 26}},
 };
 
 uint32_t op_precedence(std::string op) {

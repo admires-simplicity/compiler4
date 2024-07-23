@@ -201,6 +201,10 @@ int main(int argc, char** argv) {
     // function definition parse tests
     {"f(x) = { x; }", "(= (apply f x) (block (; x)))"}, // TODO (maybe): change parser to use something like "defun" instead of "apply" ?
     {"f(x : int, y : int) -> int = { x + y }", "(= (-> (apply f (, (: x int) (: y int))) int) (block (+ x y)))"},
+
+    // let test
+    {"let x = 1", "(let (= x 1)"}, // TODO: fix this -> low precedence prefix ops don't bind after bin-ops...
+    {"let x = 1;", "(; let (= x 1))"}, // I think my old solution was just to give the prefix ops a binop value or something... ???
  };
 
   // const std::vector<test_case> test_cases = {
