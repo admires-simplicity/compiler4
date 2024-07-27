@@ -203,8 +203,32 @@ int main(int argc, char** argv) {
     {"f(x : int, y : int) -> int = { x + y }", "(= (-> (apply f (, (: x int) (: y int))) int) (block (+ x y)))"},
 
     // let test
-    {"let x = 1", "(let (= x 1)"}, // TODO: fix this -> low precedence prefix ops don't bind after bin-ops...
-    {"let x = 1;", "(; let (= x 1))"}, // I think my old solution was just to give the prefix ops a binop value or something... ???
+    {"let x = 1", "(let (= x 1))"},
+    {"let x = 1;", "(; (let (= x 1)))"},
+
+    // let with type
+    {"let x : int = 1", "(let (= (: x int) 1))"},
+    {"let x : int = 1;", "(; (let (= (: x int) 1)))"},
+
+    // var tests
+    {"var x = 1", "(var (= x 1))"},
+    {"var x = 1;", "(; (var (= x 1)))"},
+
+    // var tests with type
+    {"var x : int = 1", "(var (= (: x int) 1))"},
+    {"var x : int = 1;", "(; (var (= (: x int) 1)))"},
+
+    // fn tests
+    {"fn f(x) { x; }", "(fn (apply f x) (block (; x)))"},
+    {"fn f(x : int, y : int) -> int { x + y }", "(fn (-> (apply f (, (: x int) (: y int))) int) (block (+ x y)))"},
+    // I originally made the "fn" prefix in order to distinguish between the
+    // "apply" token/operator and function application, but actually I still
+    // have to use apply here, so that doesn't even matter...
+    // IDK if I will want to use "fn <sig> <body>", or just "<sig> = <body>"
+    {"fn f(x : int, y : int) -> int { \n\
+        a : int = x + y; \n\
+        b : int = x * y; \n\
+        a + b }", "(fn (-> (apply f (, (: x int) (: y int))) int) (block (; (= (: a int) (+ x y))) (; (= (: b int) (* x y))) (+ a b)))"},
  };
 
   // const std::vector<test_case> test_cases = {

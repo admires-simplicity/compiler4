@@ -146,7 +146,7 @@ private:
   }
 
 
-  std::set<char> syntax_chars = {'(', ')', '[', ']', '.', ',', ';', '\n',
+  std::set<char> syntax_chars = {'(', ')', '[', ']', '.', ',', ';', /*'\n',*/
     // // arithmetic ops
     // '-', '+', '*', '/', '>', '<', '^', '=', 
     // // logical ops
@@ -158,7 +158,7 @@ private:
   // };
 
   bool whitespace(char c) {
-    return c == ' ' || c == '\t';
+    return c == ' ' || c == '\t' || c == '\n';
   }
 
   void skip_whitespace() {

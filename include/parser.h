@@ -96,6 +96,10 @@ std::map<uint32_t, BinPrecedence> binary_precedence = {
   // operators, and we should never have id = 0.
 
   {110, {Assoc::left, 1}},
+
+  {120, {Assoc::left, 3}}, // these are supposed to be "postfix" ops, but
+  {121, {Assoc::left, 3}}, // I gave them "binop" precedences just to compare in
+  {122, {Assoc::left, 3}}, // can_bind_left ... TODO: fix this?
   
   {1, {Assoc::left, 7}},
   {2, {Assoc::right, 8}},
@@ -164,8 +168,11 @@ private:
       val = new SyntaxNode(new Token(Token::Type::block), children);
     } else {
       lexer.next(); // consume token
-      if (prefix_ops.contains(tkn->literal)) {
-        val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_value()});
+      bool is_prefix_op = prefix_ops.contains(tkn->literal);
+      if (is_prefix_op && tkn->literal == "fn") {
+        val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal]), parse()});
+      } else if (is_prefix_op) {
+        val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal])});
       } else {
         val = new SyntaxNode(tkn);
       }
@@ -216,8 +223,12 @@ private:
     Token *nxt = lexer.peek().value();
 
     if (postfix_ops.contains(lexer.peek().value()->literal)
-      && can_bind_left(syntax_ids[nxt->literal], last_op_id))
+      && can_bind_left(syntax_ids[nxt->literal], last_op_id)) {
+      // std::cout << "can parse postfix" << std::endl;
+      // std::cout << "postfix: " << nxt->literal << std::endl;
+      // std::cout << "last id: " << last_op_id << std::endl;
       can_parse_postfix = true;
+    }
 
     // check if we can parse a bin op
     if (lexer.awaiting(2) // don't have an op and value
