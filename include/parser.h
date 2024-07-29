@@ -42,7 +42,9 @@ std::set<std::string> bin_ops = {
   "=",
   ",",
   ":",
-  "->"
+  "->",
+  "then", 
+  "else",
 };
 
 std::map<std::string, uint32_t> syntax_ids = {
@@ -63,6 +65,11 @@ std::map<std::string, uint32_t> syntax_ids = {
   {"fn", 120},
   {"let", 121},
   {"var", 122},
+
+  {"if", 200},
+  {"then", 201},
+  {"else", 202},
+
 };
 
 std::set<std::string> prefix_ops = {
@@ -72,6 +79,8 @@ std::set<std::string> prefix_ops = {
   "fn",
   "let",
   "var",
+
+  "if",
 };
 
 std::set<std::string> postfix_ops = {
@@ -100,6 +109,11 @@ std::map<uint32_t, BinPrecedence> binary_precedence = {
   {120, {Assoc::left, 3}}, // these are supposed to be "postfix" ops, but
   {121, {Assoc::left, 3}}, // I gave them "binop" precedences just to compare in
   {122, {Assoc::left, 3}}, // can_bind_left ... TODO: fix this?
+
+  //if, then, else
+  {200, {Assoc::left, 6}},
+  {201, {Assoc::left, 5}},
+  {202, {Assoc::left, 4}},
   
   {1, {Assoc::left, 7}},
   {2, {Assoc::right, 8}},
@@ -215,7 +229,7 @@ private:
     }
   }
 
-  SyntaxNode *parse_increasing_precedence(SyntaxNode* left, uint32_t last_op_id) {
+  SyntaxNode *parse_increasing_precedence(SyntaxNode* left, uint32_t last_op_id) { // 
     bool can_parse_postfix = false;
     bool can_parse_binary = false;
     if (!lexer.awaiting(1)) return left;

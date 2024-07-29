@@ -229,6 +229,10 @@ int main(int argc, char** argv) {
         a : int = x + y; \n\
         b : int = x * y; \n\
         a + b }", "(fn (-> (apply f (, (: x int) (: y int))) int) (block (; (= (: a int) (+ x y))) (; (= (: b int) (* x y))) (+ a b)))"},
+
+    // if-then(-else) tests
+    {"if true then 1", "(then (if true) 1)"}, // this is absolutely insane
+    {"if true then 1 else 2", "(else (then (if true) 1) 2)"}, // TODO: think about whether or not this is good...
  };
 
   // const std::vector<test_case> test_cases = {
