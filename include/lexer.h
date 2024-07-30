@@ -39,6 +39,7 @@ class Lexer {
 public:
   std::istream& istream;
 
+  Lexer() : istream(std::cin) {}
   Lexer(std::istream& istream) : istream(istream) {}
   Lexer(std::istream&& istream) : istream(istream) {}
 

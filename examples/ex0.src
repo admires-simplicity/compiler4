@@ -1,14 +1,15 @@
-f : (x : int) -> int = {
-  if x < 1: 0
-  else {
-    if x = 1: 1
-    else fib(x-1) + fib(x-2)
-  }
-}
+fib(x : int) -> int = {
+  if x < 2 then
+    1 // this is technically the "combinatorial definition", just because I haven't implemented "else if" yet, kek
+  else
+    fib(x - 1) + fib(x - 2)
+};
 
-printf "fib 0 is %d\n" (f 0);
-printf "fib 1 is %d\n" (f 1);
-printf "fib 2 is %d\n" (f 2);
-printf "fib 3 is %d\n" (f 3);
-printf "fib 4 is %d\n" (f 4);
-printf "fib 5 is %d\n" (f 5);
+printf("%dth fibonacci number is %d\n", 1, fib(1));
+printf("%dth fibonacci number is %d\n", 2, fib(2));
+printf("%dth fibonacci number is %d\n", 3, fib(3));
+printf("%dth fibonacci number is %d\n", 4, fib(4));
+printf("%dth fibonacci number is %d\n", 5, fib(5));
+printf("%dth fibonacci number is %d\n", 6, fib(6));
+printf("%dth fibonacci number is %d\n", 7, fib(7));
+printf("%dth fibonacci number is %d\n", 8, fib(8));

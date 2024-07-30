@@ -5,14 +5,24 @@
 #include <cstdint>
 #include <optional>
 #include <sstream>
+#include <fstream>
 
 #include "lexer.h"
 #include "parser.h"
 #include "AST.h"
 #include "Cemitter.h"
 
-int main() {
-    Lexer lexer(std::cin);
+std::istringstream *filename_to_str(std::string filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) return nullptr;
+    
+    std::stringstream buf;
+    buf << "{\n" << file.rdbuf() << "\n}"; // interpret as block
+    return new std::istringstream(buf.str());
+}
+
+int main(int argc, char** argv) {
+    Lexer lexer((argc == 2) ? *filename_to_str(argv[1]) : std::cin);
 
     SyntaxNode *parsed = Parser(lexer).parse();
     std::cout << "\nparsed: " << std::endl;
