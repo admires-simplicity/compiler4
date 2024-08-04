@@ -11,10 +11,20 @@ SyntaxNode *compile(SyntaxNode *node) {
 
     node->token = new Token(Token::Type::program_block);
 
+    std::vector<SyntaxNode*> function_list;
+
+    SyntaxNode *main_block = new SyntaxNode(new Token(Token::Type::block));
+
     // gather function definitions into function list,
-
     // gather other statements into main definition
+    // for (auto child : node->children) {
+    //     main_block->children.push_back(child);
+    // }
 
+    // SyntaxNode *main_fn = new SyntaxNode(new Token("->"), {
+    //     new SyntaxNode(new Token(""), {}),
+    //     main_block,
+    // });
 
     return node;   
 }

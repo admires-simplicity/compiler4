@@ -31,6 +31,8 @@ public:
   uint32_t column;
 
   Token(Type type) : type(type), literal(token_type_repr[type]) {}
+  Token(std::string literal) : type(Type::identifier), literal(literal) {}
+  Token(Type type, std::string literal) : type(type), literal(literal) {}
   Token(Type type, std::string literal, uint32_t line, uint32_t column) : type(type), literal(literal), line(line), column(column) {}
 };
 

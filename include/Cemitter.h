@@ -47,21 +47,60 @@ bool emit(SyntaxNode *node) {
   //std::cout << "\"" << node->token->token_type_repr[node->token->type] << ": " << node->token->literal << "\"\n";
 
   switch (node->token->type) {
+
     case Token::Type::identifier:
       // "syntax" types will have to be here for now
       if (node->token->literal == ";") {
         emit(node->children[0]);
         std::cout << ";\n";
-      } else if (node->token->literal == ",") {
+      }
+
+      else if (node->token->literal == ":") {
+        SyntaxNode *ident = node->children[0];
+        SyntaxNode *type = node->children[1];
+        emit(type);
+        std::cout << " ";
+        emit(ident);
+
+      }
+      
+      else if (node->token->literal == ",") {
         emit(node->children[0]);
         std::cout << ", ";
         emit(node->children[1]);
-      } else {
+      }
+
+      else if (node->token->literal == "=") {
+        SyntaxNode *lh = node->children[0];
+        SyntaxNode *rh = node->children[1];
+
+        // taking
+        // (; (= (-> (apply fib (: x int)) int) (block (else (then (if (< x 2)) 1) (+ (apply fib (- x 1)) (apply fib (- x 2)))))))
+        // as a paradigmatic example
+        if (lh->token->literal == "->") { // typed function defn
+          SyntaxNode *call_sig = lh->children[0];
+          SyntaxNode *rtype = lh->children[1];
+          assert(call_sig->token->type == Token::Type::apply);
+          emit(rtype);
+          std::cout << " ";
+          emit(call_sig);
+          emit(rh);
+        }
+
+        else { // for now, var. technically untyped fn would fit here.
+
+        }
+      }
+      
+      else {
         return emit_literal(node); // same as Type::number
       }
+  
       break;
+
     case Token::Type::number:
       return emit_literal(node);
+
     case Token::Type::apply:
       // std::cout << node->token->literal << "(";
       // emit(node->children[0]);
@@ -71,14 +110,17 @@ bool emit(SyntaxNode *node) {
       emit(node->children[1]);
       std::cout << ")";
       break;
+
     case Token::Type::block:
       std::cout << "{\n";
       emit_block(node);
       std::cout << "}\n";
       break;
+
     case Token::Type::program_block:
       emit_block(node);
       break;
+
     default:
       std::cerr << "<CEmitter> Error: unhandled node type " << node->token->literal << "\n";
       return false;
