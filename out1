@@ -1,100 +1,12 @@
-import
-system
-.
-time
-as
-t
-import
-system
-.
-stdio
-as
-io
-let
-double-max-plus-min-i32
-(
-x
-ui32
-->
-y
-ui32
-->
-bool
-)
-=
-{
-let
-bchoose
-cf
-=
-lam
-x
-lam
-y
-if
-x
-cmp
-y
-then
-x
-else
-y
-let
-max
-,
-min
-=
-bchoose
->
-x
-y
-,
-bchoose
-<
-x
-y
-return
-max
-+
-max
-+
-min
-}
-let
-main
-:
-int
-=
-{
-io
-.
-printf
-"Current time: %t\n"
-t
-.
-current_time
-(
-)
-;
-io
-.
-printf
-"A number: %d\n"
-(
-(
-lam
-f
-(
-(
-f
-2
-)
-3
-)
-)
-double-max-plus-min-i32
-)
-;
-return
-0
-}
+
+parsed: 
+(block
+ (; (= (-> (apply fib (: x int)) int) (block (else (then (if (< x 2)) 1) (+ (apply fib (- x 1)) (apply fib (- x 2)))))))
+ (; (apply printf (, "%dth fibonacci number is %d\n" (, 1 (apply fib 1)))))
+ (; (apply printf (, "%dth fibonacci number is %d\n" (, 2 (apply fib 2))))) 
+ (; (apply printf (, "%dth fibonacci number is %d\n" (, 3 (apply fib 3)))))
+ (; (apply printf (, "%dth fibonacci number is %d\n" (, 4 (apply fib 4)))))
+ (; (apply printf (, "%dth fibonacci number is %d\n" (, 5 (apply fib 5)))))
+ (; (apply printf (, "%dth fibonacci number is %d\n" (, 6 (apply fib 6)))))
+ (; (apply printf (, "%dth fibonacci number is %d\n" (, 7 (apply fib 7)))))
+ (; (apply printf (, "%dth fibonacci number is %d\n" (, 8 (apply fib 8))))))

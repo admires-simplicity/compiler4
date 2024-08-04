@@ -14,17 +14,16 @@ public:
     number,
     apply,
     block,
+    program_block,
   };
 
-private:
   std::map<Type, std::string> token_type_repr {
     {Type::identifier, "identifier"},
     {Type::number, "number"},
     {Type::apply, "apply"}, // TODO: apply and block should definitely not be here...
     {Type::block, "block"}, 
+    {Type::program_block, "program_block"},
   };
-
-public:
 
   Type type;
   std::string literal;
@@ -98,10 +97,11 @@ private:
     char c = istream.get();
     literal += c;
 
-    bool not_num = false;
+    bool not_num = true; // TODO: test this because I changed the logic on it
 
     // lex number
     if (num(c)) {
+      not_num = false;
       bool found_dot = false;
       while (num(istream.peek()) || (istream.peek() == '.' && !found_dot)) {
         c = istream.get();

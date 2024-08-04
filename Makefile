@@ -1,19 +1,27 @@
+# Directories
 SRC_DIR := src
+LIB_DIR := $(SRC_DIR)/lib
+APP_DIR := $(SRC_DIR)/app
 INCLUDE_DIR := include
 BUILD_DIR := build
 
-SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
+# Source files
+LIB_SOURCES := $(wildcard $(LIB_DIR)/*.cpp)
+APP_SOURCES := $(wildcard $(APP_DIR)/*.cpp)
+
+# Headers
 HEADERS := $(wildcard $(INCLUDE_DIR)/*.h)
 
-# Identify the main source file and its corresponding executable name
-MAIN_SRC := $(SRC_DIR)/main.cpp
+# Main source file and its corresponding executable name
+MAIN_SRC := $(APP_DIR)/main.cpp
 MAIN_OBJ := $(BUILD_DIR)/main.o
 MAIN_EXE := compiler4
 
-# For each source file, create an executable name by removing the path and extension
-OTHER_SOURCES := $(filter-out $(MAIN_SRC), $(SOURCES))
-OTHER_EXECUTABLES := $(patsubst $(SRC_DIR)/%.cpp,%,$(OTHER_SOURCES))
+# Other executable sources
+OTHER_SOURCES := $(filter-out $(MAIN_SRC), $(APP_SOURCES))
+OTHER_EXECUTABLES := $(patsubst $(APP_DIR)/%.cpp,%,$(OTHER_SOURCES))
 
+# Compiler and flags
 CXX := g++
 CXXFLAGS := -std=c++20 -I$(INCLUDE_DIR)
 
@@ -28,13 +36,17 @@ else
 	CXXFLAGS += $(RELEASE_FLAGS)
 endif
 
-# Rule for creating object files
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) | $(BUILD_DIR)
+# Rule for creating object files from lib directory
+$(BUILD_DIR)/%.o: $(LIB_DIR)/%.cpp $(HEADERS) | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Rule for creating object files from app directory
+$(BUILD_DIR)/%.o: $(APP_DIR)/%.cpp $(HEADERS) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Rule for creating the main executable
-$(MAIN_EXE): $(MAIN_OBJ)
-	$(CXX) $(MAIN_OBJ) -o $(MAIN_EXE)
+$(MAIN_EXE): $(MAIN_OBJ) $(patsubst $(LIB_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(LIB_SOURCES))
+	$(CXX) $(MAIN_OBJ) $(patsubst $(LIB_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(LIB_SOURCES)) -o $(MAIN_EXE)
 
 # Rule for creating other executables in the current directory
 %: $(BUILD_DIR)/%.o
