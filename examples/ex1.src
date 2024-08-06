@@ -1,15 +1,17 @@
-fib(x : int) -> int = {
-  if x < 2 then
-    1 // this is technically the "combinatorial definition", just because I haven't implemented "else if" yet, kek
-  else
-    fib(x - 1) + fib(x - 2)
+f(x : int, y : int) -> int = {
+  x * x + y * y
 };
 
-printf("%dth fibonacci number is %d\n", 1, fib(1));
-printf("%dth fibonacci number is %d\n", 2, fib(2));
-printf("%dth fibonacci number is %d\n", 3, fib(3));
-printf("%dth fibonacci number is %d\n", 4, fib(4));
-printf("%dth fibonacci number is %d\n", 5, fib(5));
-printf("%dth fibonacci number is %d\n", 6, fib(6));
-printf("%dth fibonacci number is %d\n", 7, fib(7));
-printf("%dth fibonacci number is %d\n", 8, fib(8));
+printf("f(%d, %d) = %d\n", 0, 0, f(0, 0));
+printf("f(%d, %d) = %d\n", 0, 1, f(0, 1));
+printf("f(%d, %d) = %d\n", 1, 0, f(1, 0));
+printf("f(%d, %d) = %d\n", 1, 1, f(1, 1));
+printf("f(%d, %d) = %d\n", 1, 2, f(1, 2));
+printf("f(%d, %d) = %d\n", 2, 0, f(2, 0));
+printf("f(%d, %d) = %d\n", 2, 1, f(2, 1));
+printf("f(%d, %d) = %d\n", 2, 2, f(2, 2));
+printf("f(%d, %d) = %d\n", 2, 3, f(2, 3));
+printf("f(%d, %d) = %d\n", 3, 0, f(3, 0));
+printf("f(%d, %d) = %d\n", 3, 1, f(3, 1));
+printf("f(%d, %d) = %d\n", 3, 2, f(3, 2));
+printf("f(%d, %d) = %d\n", 3, 3, f(3, 3));

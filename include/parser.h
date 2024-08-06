@@ -70,6 +70,7 @@ std::map<std::string, uint32_t> syntax_ids = {
   {"then", 201},
   {"else", 202},
 
+  {"return", 300},
 };
 
 std::set<std::string> prefix_ops = {
@@ -81,6 +82,8 @@ std::set<std::string> prefix_ops = {
   "var",
 
   "if",
+
+  "return",
 };
 
 std::set<std::string> postfix_ops = {
@@ -105,6 +108,8 @@ std::map<uint32_t, BinPrecedence> binary_precedence = {
   // operators, and we should never have id = 0.
 
   {110, {Assoc::left, 1}},
+
+  {300, {Assoc::left, 2}}, // 'return'
 
   {120, {Assoc::left, 3}}, // these are supposed to be "postfix" ops, but
   {121, {Assoc::left, 3}}, // I gave them "binop" precedences just to compare in

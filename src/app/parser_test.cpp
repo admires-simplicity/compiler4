@@ -233,6 +233,9 @@ int main(int argc, char** argv) {
     // if-then(-else) tests
     {"if true then 1", "(then (if true) 1)"}, // this is absolutely insane
     {"if true then 1 else 2", "(else (then (if true) 1) 2)"}, // TODO: think about whether or not this is good...
+
+    // return tests
+    {"return 1 + 1;", "(; (return (+ 1 1)))"},
  };
 
   // const std::vector<test_case> test_cases = {

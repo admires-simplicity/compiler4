@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include <string>
+
 #include "lexer.h"
 
 
@@ -13,8 +15,14 @@ public:
   Token *token;
   std::vector<SyntaxNode *> children;
 
+  SyntaxNode(std::string string) : token(new Token(string)) {}
+  SyntaxNode(std::string string, std::vector<SyntaxNode *> children) : token(new Token(string)), children(children) {}
+  
   SyntaxNode(Token *token) : token(token) {}
   SyntaxNode(Token *token, std::vector<SyntaxNode *> children) : token(token), children(children) {}
+
+  SyntaxNode(Token::Type type, std::vector<SyntaxNode *> children) : token(new Token(type)), children(children) {}
+
   ~SyntaxNode() {
     delete token;
     for (auto child : children) {

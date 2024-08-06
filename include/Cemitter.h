@@ -47,10 +47,17 @@ bool emit(SyntaxNode *node) {
   //std::cout << "\"" << node->token->token_type_repr[node->token->type] << ": " << node->token->literal << "\"\n";
 
   switch (node->token->type) {
-
     case Token::Type::identifier:
       // "syntax" types will have to be here for now
-      if (node->token->literal == ";") {
+      if (c_infix_ops.contains(node->token->literal)) {
+        //std::cout << "(";
+        emit(node->children[0]);
+        emit_literal(node);
+        emit(node->children[1]);
+        //std::cout << ")";
+      }
+
+      else if (node->token->literal == ";") {
         emit(node->children[0]);
         std::cout << ";\n";
       }
@@ -83,7 +90,7 @@ bool emit(SyntaxNode *node) {
           assert(call_sig->token->type == Token::Type::apply);
           emit(rtype);
           std::cout << " ";
-          emit(call_sig);
+          emit(call_sig); // TODO: this is broken?
           emit(rh);
         }
 
@@ -92,6 +99,11 @@ bool emit(SyntaxNode *node) {
         }
       }
       
+      else if (node->token->literal == "return") {
+        std::cout << "return ";
+        emit(node->children[0]);
+      }
+
       else {
         return emit_literal(node); // same as Type::number
       }
