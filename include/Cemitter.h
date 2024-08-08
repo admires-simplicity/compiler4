@@ -119,7 +119,7 @@ bool emit(SyntaxNode *node) {
       // std::cout << ")";
       emit(node->children[0]);
       std::cout << "(";
-      emit(node->children[1]);
+      if (node->children.size() > 1) emit(node->children[1]);
       std::cout << ")";
       break;
 

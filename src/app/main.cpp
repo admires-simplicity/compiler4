@@ -26,13 +26,13 @@ int main(int argc, char** argv) {
     Lexer lexer((argc == 2) ? *filename_to_str(argv[1]) : std::cin);
 
     SyntaxNode *parsed = Parser(lexer).parse();
-    std::cout << "\nparsed: " << std::endl;
-    if (parsed) std::cout << parsed->to_string() << std::endl;
-    else std::cout << "null" << std::endl;
+    // std::cout << "\nparsed: " << std::endl;
+    // if (parsed) std::cout << parsed->to_string() << std::endl;
+    // else std::cout << "null" << std::endl;
 
     if (parsed) {
         SyntaxNode *compiled = compile(parsed);
-        std::cout << std::endl << "emitted:" << std::endl;
+        // std::cout << std::endl << "emitted:" << std::endl;
         emit(compiled);
     }
 

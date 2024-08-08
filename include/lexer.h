@@ -138,7 +138,7 @@ private:
     }
     // else -- syntax char (do nothing)
     
-    if (literal == "//") {
+    if (literal.substr(0,2) == "//") {
       while (istream.peek() != '\n' && !istream.eof()) {
         c = istream.get();
       }
