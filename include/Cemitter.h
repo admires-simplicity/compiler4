@@ -98,6 +98,26 @@ bool emit(SyntaxNode *node) {
 
         }
       }
+
+      else if (node->token->literal == "then") {
+        emit(node->children[0]);
+        std::cout << "{\n";
+        emit(node->children[1]);
+        std::cout << "}\n";
+      }
+
+      else if (node->token->literal == "if") {
+        std::cout << "if (";
+        emit(node->children[0]);
+        std::cout << ")";
+      }
+
+      else if (node->token->literal == "else") {
+        emit(node->children[0]);
+        std::cout << "else {\n";
+        emit(node->children[1]);
+        std::cout << "}\n";
+      }
       
       else if (node->token->literal == "return") {
         std::cout << "return ";
@@ -130,6 +150,7 @@ bool emit(SyntaxNode *node) {
       break;
 
     case Token::Type::program_block:
+      printf("#include <stdio.h>\n");
       emit_block(node);
       break;
 

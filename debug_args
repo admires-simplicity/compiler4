@@ -1,3 +1,0 @@
-file ./compiler4
-break Cemitter.h:emit_block
-run examples/ex1.src

@@ -36,6 +36,7 @@ SyntaxNode *get_block_in_fn_defn(SyntaxNode *node) {
     return node;
 }
 
+
 // for now this is only compiling a whole source file.
 // if we want to make an interpreter we'll need to rework this later.
 SyntaxNode *compile(SyntaxNode *node) {
@@ -72,6 +73,8 @@ SyntaxNode *compile(SyntaxNode *node) {
     }
 
     program->children.push_back(main_fn);
+
+
 
     // std::vector<SyntaxNode*> function_list;
 
