@@ -101,27 +101,32 @@ bool emit(SyntaxNode *node) {
 
       else if (node->token->literal == "then") {
         emit(node->children[0]);
-        std::cout << "{\n";
+        std::cout << " ? (";
         emit(node->children[1]);
-        std::cout << "}\n";
+        std::cout << ")";
       }
 
       else if (node->token->literal == "if") {
-        std::cout << "if (";
+        std::cout << "(";
         emit(node->children[0]);
         std::cout << ")";
       }
 
       else if (node->token->literal == "else") {
+        std::cout << "(";
         emit(node->children[0]);
-        std::cout << "else {\n";
+        std::cout << " : (";
         emit(node->children[1]);
-        std::cout << "}\n";
+        std::cout << "))";
       }
       
       else if (node->token->literal == "return") {
         std::cout << "return ";
         emit(node->children[0]);
+      }
+
+      else if (node->token->literal == "let") {
+        // TODO
       }
 
       else {

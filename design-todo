@@ -2,6 +2,19 @@ TODO: add more tests (always)
 
 TODO: ... memory management (actually free stuff lol)
 
+implement variables
+ -- variable definition
+ -- variable assignment
+
+implement type inference for variables and functions (return types)
+
+implement type checking
+
+change AST to use AST::Type instead of using token strings to identify ast node types
+
+change Cemitter to emit to stream argument instead of std::out
+
+change all headers to pimpl
 
 
 
@@ -22,3 +35,32 @@ f(x, y) = x + y if {x, y} > 0 else 0
 
 (3)
 f(x : int, y : int) -> int = { x + y if {x, y} > 0 else 0 }
+
+
+
+if syntax:
+return if true then 1 -- X malformed (need then on return) (?)
+
+if true then 1 else false
+if true then {print "hi"; 1} else {print "bye"; 2}
+
+
+f_001 = {print "hi"; 1}
+f_002 = {print "bye"; 2}
+
+
+if true then {print "hi"; 1} else {print "bye"; 2}
+(true) ? f_001() : f_002
+
+
+return if true then {print "hi"; 1} else {print "bye"; 2}
+return ((true) ? f_001() : f_002)
+
+
+
+if true then {print "hi"; print "hi"} else {print "bye"; print "bye"}
+(true) ? f_003 : f_004;
+
+
+// for now, this will just be semantically empty
+if true then (something)

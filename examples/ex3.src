@@ -1,0 +1,25 @@
+for(start : int, end : (int -> bool), next : (int -> int), body : (int -> unit)) -> unit = {
+  body(start);
+  if end(start) then
+    ()
+  else
+    for(next(start), end, next, body)
+};
+
+inc(x : int) -> int = x + 1;
+
+stop_at(x : int) -> (int -> bool) = {
+  y : int -> y == x
+};
+
+print_fib(x : int) -> unit = {
+  fib(x : int) -> int = {
+    if x < 2 then
+      1
+    else
+      fib(x - 1) + fib(x - 2)
+  };
+  printf("%dth fibonacci number is %d\n", x, fib(x))
+};
+
+for(0, stop_at(100), inc, print_fib)
