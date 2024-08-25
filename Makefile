@@ -17,6 +17,10 @@ MAIN_SRC := $(APP_DIR)/main.cpp
 MAIN_OBJ := $(BUILD_DIR)/main.o
 MAIN_EXE := compiler4
 
+# Integration test result directory variables
+INT_C_RESULTS := integration\ testing/c\ results
+INT_EXE_RESULTS := integration\ testing/exe\ results
+
 # Other executable sources
 OTHER_SOURCES := $(filter-out $(MAIN_SRC), $(APP_SOURCES))
 OTHER_EXECUTABLES := $(patsubst $(APP_DIR)/%.cpp,%,$(OTHER_SOURCES))
@@ -64,7 +68,10 @@ $(foreach exe,$(OTHER_EXECUTABLES),$(eval $(exe): $(BUILD_DIR)/$(exe).o))
 .PHONY: all
 all: $(MAIN_EXE) $(OTHER_EXECUTABLES)
 
-# Clean rule
-.PHONY: clean
+# Clean rules
+.PHONY: clean cleantest
 clean:
-	rm -rf $(BUILD_DIR) $(OTHER_EXECUTABLES) $(MAIN_EXE)
+	rm -rf $(BUILD_DIR) $(OTHER_EXECUTABLES) $(MAIN_EXE) $(INT_C_RESULTS) $(INT_EXE_RESULTS)
+
+cleantest:
+	rm -rf $(INT_C_RESULTS) $(INT_EXE_RESULTS)

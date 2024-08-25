@@ -1,3 +1,14 @@
+if expr is block-expr, we need to make block-expr into a void function...
+  unless if-expr is returning, or using its value...
+
+we should maybe have 2 block AST types:
+  block
+  block-with-value
+  
+  https://github.com/sampsyo/bril.git
+
+
+
 TODO: add more tests (always)
 
 TODO: ... memory management (actually free stuff lol)
