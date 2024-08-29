@@ -19,7 +19,8 @@ MAIN_EXE := compiler4
 
 # Integration test result directory variables
 INT_C_RESULTS := integration\ testing/c\ results
-INT_EXE_RESULTS := integration\ testing/exe\ results
+INT_EXES := integration\ testing/exes
+INT_EXE_OUTPUTS := integration\ testing/exe\ outputs
 
 # Other executable sources
 OTHER_SOURCES := $(filter-out $(MAIN_SRC), $(APP_SOURCES))
@@ -71,7 +72,7 @@ all: $(MAIN_EXE) $(OTHER_EXECUTABLES)
 # Clean rules
 .PHONY: clean cleantest
 clean:
-	rm -rf $(BUILD_DIR) $(OTHER_EXECUTABLES) $(MAIN_EXE) $(INT_C_RESULTS) $(INT_EXE_RESULTS)
+	rm -rf $(BUILD_DIR) $(OTHER_EXECUTABLES) $(MAIN_EXE) $(INT_C_RESULTS) $(INT_EXES) $(INT_EXE_OUTPUTS)
 
 cleantest:
-	rm -rf $(INT_C_RESULTS) $(INT_EXE_RESULTS)
+	rm -rf $(INT_C_RESULTS) $(INT_EXES) $(INT_EXE_OUTPUTS)
