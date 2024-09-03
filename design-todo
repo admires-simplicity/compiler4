@@ -5,7 +5,6 @@ we should maybe have 2 block AST types:
   block
   block-with-value
   
-  https://github.com/sampsyo/bril.git
 
 
 

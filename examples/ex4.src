@@ -1,3 +1,8 @@
+//variable definition/declaration
+
 //x : int = 0;
 let x : int = 0;
-printf("%d\n", x);
+printf("%d", x);
+
+/*expect:
+0*/

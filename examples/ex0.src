@@ -1,1 +1,8 @@
 printf("Hello world\n%d\n%d\n%d\n", 111, 222, 333);
+
+/*expect:
+Hello world
+111
+222
+333
+*/

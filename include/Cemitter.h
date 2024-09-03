@@ -126,7 +126,16 @@ bool emit(SyntaxNode *node) {
       }
 
       else if (node->token->literal == "let") {
-        // TODO
+        SyntaxNode *assignment = node->children[0];
+        SyntaxNode *def = assignment->children[0];
+        SyntaxNode *name = def->children[0];
+        SyntaxNode *type = def->children[1];
+        SyntaxNode *val = assignment->children[1];
+        emit(type);
+        std::cout << " ";
+        emit(name);
+        std::cout << " = ";
+        emit(val);
       }
 
       else {
