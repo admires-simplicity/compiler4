@@ -74,6 +74,8 @@ SyntaxNode *compile(SyntaxNode *node) {
 
     program->children.push_back(main_fn);
 
+    
+
 
 
     // std::vector<SyntaxNode*> function_list;

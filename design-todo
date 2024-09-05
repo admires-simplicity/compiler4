@@ -1,3 +1,9 @@
+change AST to use AST::Type instead of using token strings to identify ast node types
+  In order to check whether the function always returns the right value type... just check all returns in the function.
+
+add type AST nodes...
+
+
 if expr is block-expr, we need to make block-expr into a void function...
   unless if-expr is returning, or using its value...
 
@@ -20,7 +26,6 @@ implement type inference for variables and functions (return types)
 
 implement type checking
 
-change AST to use AST::Type instead of using token strings to identify ast node types
 
 change Cemitter to emit to stream argument instead of std::out
 

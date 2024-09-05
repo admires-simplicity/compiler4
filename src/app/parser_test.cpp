@@ -1,6 +1,7 @@
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <fstream>
+#include <string>
 #include <vector>
 #include <cstdint>
 
@@ -18,12 +19,24 @@ std::string get_canonical_parse_str(std::string s) {
 
 const int VERBOSE = 1;
 
+// const int FROM_SOURCE = 2;
+// std::string source_filename;
+
 int64_t read_flags(int argc, char** argv) {
   int64_t flags = 0;
   for (int i = 1; i < argc; i++) {
     if (std::string(argv[i]) == "-v") {
       flags |= VERBOSE;
     }
+    // else if (std::string(argv[i]) == "-s") {
+    //   flags |= FROM_SOURCE;
+    //   ++i;
+    //   if (i >= argc) {
+    //     std::cerr << "Error: expected source filename after -s flag\n";
+    //     exit(1);
+    //   }
+    //   source_filename = argv[i];
+    // }
   }
   return flags;
 }
@@ -261,6 +274,16 @@ int main(int argc, char** argv) {
 
   //   {"1 * 2 * 3 * 4", "(* 1 (* 2 (* 3 4)))"},
   // };
+
+  // if (flags & FROM_SOURCE) {
+  //   std::ifstream source_file(source_filename);
+  //   std::string line;
+  //   while (std::getline(source_file, line)) {
+  //     std::string res = get_canonical_parse_str(line);
+  //     std::cout << line << " parses to " << res << std::endl;
+  //   }
+  //   return 0;
+  // }
 
   int wrong = 0;
   int correct = 0;

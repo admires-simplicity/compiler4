@@ -2,7 +2,7 @@
 
 f(x : int) -> int = {
   if x = 0 then {
-    printf("roger roger, it's zero");
+    printf("roger roger, it's zero\n");
     x
   } else {
     x * 2
@@ -12,3 +12,10 @@ f(x : int) -> int = {
 printf("%d\n", f(0));
 printf("%d\n", f(1));
 printf("%d\n", f(2));
+
+/*expect:
+roger roger, it's zero
+0
+2
+4
+*/

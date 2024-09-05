@@ -7,28 +7,40 @@
 #include <sstream>
 #include <fstream>
 
+#include "util.h"
 #include "lexer.h"
 #include "parser.h"
 #include "AST.h"
 #include "compiler.h"
 #include "Cemitter.h"
 
-std::istringstream *filename_to_str(std::string filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) return nullptr;
-    
-    std::stringstream buf;
-    buf << "{\n" << file.rdbuf() << "\n}"; // interpret as block
-    return new std::istringstream(buf.str());
+const int PARSE_TREE_ONLY = 1;
+
+int64_t read_flags(int argc, char** argv) {
+  int64_t flags = 0;
+  for (int i = 1; i < argc; i++) {
+    if (std::string(argv[i]) == "-p") {
+      flags |= PARSE_TREE_ONLY;
+    }
+  }
+  return flags;
 }
 
+
 int main(int argc, char** argv) {
-    Lexer lexer((argc == 2) ? *filename_to_str(argv[1]) : std::cin);
+    Lexer lexer((argc > 1) ? *filename_to_str(argv[argc-1]) : std::cin);
+
+    int64_t flags = read_flags(argc, argv);
 
     SyntaxNode *parsed = Parser(lexer).parse();
     // std::cout << "\nparsed: " << std::endl;
     // if (parsed) std::cout << parsed->to_string() << std::endl;
     // else std::cout << "null" << std::endl;
+
+    if (flags & PARSE_TREE_ONLY) {
+        if (parsed) std::cout << parsed->to_string() << std::endl;
+        return 0;
+    }
 
     if (parsed) {
         SyntaxNode *compiled = compile(parsed);
