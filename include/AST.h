@@ -7,11 +7,25 @@
 
 class SyntaxNode {
 public:
-  // enum class Type {
-  //   identifier,
-  //   literal,
-  // };
+  enum class Type {
+    literal,
+    identifier,
+    value,
+    apply,
+    block,
+    program_block,
+  };
 
+  std::map<Type, std::string> token_type_repr {
+    {Type::literal, "literal"},
+    {Type::identifier, "identifier"},
+    {Type::value, "value"},
+    {Type::apply, "apply"},
+    {Type::block, "block"}, 
+    {Type::program_block, "program_block"},
+  };
+
+  Type type = Type::literal;
   Token *token;
   std::vector<SyntaxNode *> children;
 
@@ -21,13 +35,18 @@ public:
   SyntaxNode(Token *token) : token(token) {}
   SyntaxNode(Token *token, std::vector<SyntaxNode *> children) : token(token), children(children) {}
 
-  SyntaxNode(Token::Type type, std::vector<SyntaxNode *> children) : token(new Token(type)), children(children) {}
+  SyntaxNode(Type type) : type(type) {}
+  SyntaxNode(Type type, std::vector<SyntaxNode *> children) : type(type), children(children) {}
 
   ~SyntaxNode() {
     delete token;
     for (auto child : children) {
       delete child;
     }
+  }
+
+  std::string type_name() {
+    return token_type_repr[type];
   }
 
   std::string to_string() {
@@ -45,8 +64,8 @@ public:
   }
 
 private:
-  std::string canonical_token_repr() {
-    if (token->literal == "\n") return "newline";
-    else return token->literal;
+  std::string canonical_token_repr() { 
+    if (type == Type::literal) return token->literal;
+    else return token_type_repr[type];
   }
 };

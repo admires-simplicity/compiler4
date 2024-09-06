@@ -184,7 +184,7 @@ private:
         children.push_back(parse());
       }
       lexer.next(); // consume "}"
-      val = new SyntaxNode(new Token(Token::Type::block), children);
+      val = new SyntaxNode(SyntaxNode::Type::block, children);
     } else {
       lexer.next(); // consume token
       bool is_prefix_op = prefix_ops.contains(tkn->literal);
@@ -204,8 +204,8 @@ private:
     tkn = nxt.value();
     if (tkn->literal == "(") { // switch this to a Trie representation...
       SyntaxNode *args = parse_parens();
-      if (args) val = new SyntaxNode(new Token(Token::Type::apply), std::vector<SyntaxNode*>{val, args});
-      else      val = new SyntaxNode(new Token(Token::Type::apply), std::vector<SyntaxNode*>{val});
+      if (args) val = new SyntaxNode(SyntaxNode::Type::apply, std::vector<SyntaxNode*>{val, args});
+      else      val = new SyntaxNode(SyntaxNode::Type::apply, std::vector<SyntaxNode*>{val});
     }
     //else if (tkn->literal == ";") {
     //   lexer.next(); // consume

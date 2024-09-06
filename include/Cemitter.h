@@ -23,6 +23,8 @@ std::map<std::string, std::string> c_std_include_map = {
 };
 
 bool emit_literal(SyntaxNode *node) {
+  assert(node->type == SyntaxNode::Type::literal);
+  assert(node->token);
   std::cout << node->token->literal;
   return true;
 }
@@ -39,15 +41,16 @@ bool emit(SyntaxNode *node) {
     std::cerr << "<CEmitter> Error: null node\n";
     return false;
   }
-  if (!node->token) {
-    std::cerr << "<CEmitter> Error: null token\n";
-    return false;
-  }
+  // if (!node->token) {
+  //   std::cerr << "<CEmitter> Error: null token\n";
+  //   return false;
+  // }
 
   //std::cout << "\"" << node->token->token_type_repr[node->token->type] << ": " << node->token->literal << "\"\n";
 
-  switch (node->token->type) {
-    case Token::Type::identifier:
+  switch (node->type) {
+    //case SyntaxNode::Type::identifier:
+    case SyntaxNode::Type::literal:
       // "syntax" types will have to be here for now
       if (c_infix_ops.contains(node->token->literal)) {
         //std::cout << "(";
@@ -87,7 +90,7 @@ bool emit(SyntaxNode *node) {
         if (lh->token->literal == "->") { // typed function defn
           SyntaxNode *call_sig = lh->children[0];
           SyntaxNode *rtype = lh->children[1];
-          assert(call_sig->token->type == Token::Type::apply);
+          assert(call_sig->type == SyntaxNode::Type::apply);
           emit(rtype);
           std::cout << " ";
           emit(call_sig); // TODO: this is broken?
@@ -144,10 +147,10 @@ bool emit(SyntaxNode *node) {
   
       break;
 
-    case Token::Type::number:
-      return emit_literal(node);
+    // case SyntaxNode::Type::number:
+    //   return emit_literal(node);
 
-    case Token::Type::apply:
+    case SyntaxNode::Type::apply:
       // std::cout << node->token->literal << "(";
       // emit(node->children[0]);
       // std::cout << ")";
@@ -157,19 +160,20 @@ bool emit(SyntaxNode *node) {
       std::cout << ")";
       break;
 
-    case Token::Type::block:
+    case SyntaxNode::Type::block:
       std::cout << "{\n";
       emit_block(node);
       std::cout << "}\n";
       break;
 
-    case Token::Type::program_block:
+    case SyntaxNode::Type::program_block:
       printf("#include <stdio.h>\n");
       emit_block(node);
       break;
 
     default:
-      std::cerr << "<CEmitter> Error: unhandled node type " << node->token->literal << "\n";
+      //std::cerr << "<CEmitter> Error: unhandled node type " << node->token->literal << "\n";
+      std::cerr << "<CEmitter> Error: unhandled node type " << node->type_name() << "\n";
       return false;
   }
 

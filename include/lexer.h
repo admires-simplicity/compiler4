@@ -9,31 +9,12 @@
 
 class Token {
 public:
-  enum class Type {
-    identifier,
-    number,
-    apply,
-    block,
-    program_block,
-  };
-
-  std::map<Type, std::string> token_type_repr {
-    {Type::identifier, "identifier"},
-    {Type::number, "number"},
-    {Type::apply, "apply"}, // TODO: apply and block should definitely not be here...
-    {Type::block, "block"}, 
-    {Type::program_block, "program_block"},
-  };
-
-  Type type;
   std::string literal;
   uint32_t line;
   uint32_t column;
 
-  Token(Type type) : type(type), literal(token_type_repr[type]) {}
-  Token(std::string literal) : type(Type::identifier), literal(literal) {}
-  Token(Type type, std::string literal) : type(type), literal(literal) {}
-  Token(Type type, std::string literal, uint32_t line, uint32_t column) : type(type), literal(literal), line(line), column(column) {}
+  Token(std::string literal) : literal(literal) {}
+  Token(std::string literal, uint32_t line, uint32_t column) : literal(literal), line(line), column(column) {}
 };
 
 class Lexer {
@@ -145,7 +126,15 @@ private:
       return std::nullopt;
     }
 
-    return new Token(not_num ? Token::Type::identifier : Token::Type::number, literal, 0, 0);
+    else if (literal.size() > 2 && literal.substr(0,2) == "/*") {
+      while (literal.substr(literal.size()-2, 2) != "*/" && !istream.eof()) {
+        c = istream.get();
+        literal += c;
+      }
+      return std::nullopt;
+    }
+
+    return new Token(literal);
   }
 
 
