@@ -1,9 +1,10 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <map>
 
 #include "lexer.h"
-
+#include "types.h"
 
 class SyntaxNode {
 public:
@@ -27,6 +28,7 @@ public:
 
   Type type = Type::literal;
   Token *token;
+  std::optional<int> type_id;
   std::vector<SyntaxNode *> children;
 
   SyntaxNode(std::string string) : token(new Token(string)) {}
