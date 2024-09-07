@@ -15,12 +15,16 @@
 #include "Cemitter.h"
 
 const int PARSE_TREE_ONLY = 1;
+const int PRETTY_PARSE_TREE = 2;
 
 int64_t read_flags(int argc, char** argv) {
   int64_t flags = 0;
   for (int i = 1; i < argc; i++) {
     if (std::string(argv[i]) == "-p") {
       flags |= PARSE_TREE_ONLY;
+    }
+    else if (std::string(argv[i]) == "-P") {
+      flags |= PRETTY_PARSE_TREE;
     }
   }
   return flags;
@@ -39,6 +43,9 @@ int main(int argc, char** argv) {
 
     if (flags & PARSE_TREE_ONLY) {
         if (parsed) std::cout << parsed->to_string() << std::endl;
+        return 0;
+    } else if (flags & PRETTY_PARSE_TREE) {
+        if (parsed) std::cout << parsed->to_string(true) << std::endl;
         return 0;
     }
 
