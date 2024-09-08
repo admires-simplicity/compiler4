@@ -17,9 +17,29 @@ private:
     }
     return max + 1;
   }
+
+  // std::string val_type_repr() {
+  //   std::string res;
+  //   if (std::holds_alternative<int>(val_type)) res = std::to_string(std::get<int>(val_type));
+  //   else {
+  //     res = "(";
+  //     TypeIdList& type_id_list = std::get<TypeIdList>(val_type);
+  //     for (auto& vt : type_id_list) {
+
+  //     }
+  //   }
+  // }
+
+  std::string val_type_repr() {
+    if (std::holds_alternative<int>(val_type)) return std::to_string(std::get<int>(val_type));
+    else return std::get<TypeIdList>(val_type).to_string();
+  }
   
-  std::string canonical_token_repr() { 
-    if (type == Type::literal) return token->literal;
+  std::string canonical_token_repr(bool display_type = false) { 
+    if (type == Type::literal) {
+      if (display_type) return val_type_repr() + ":" + token->literal;
+      else return token->literal;
+    }
     else return token_type_repr[type];
   }
 
@@ -72,7 +92,7 @@ public:
    *                     printed inline. if max_inline_depth = 1, only childless
    *                     nodes will be printed inline.
    */
-  std::string to_string(bool pretty = false, int indent = 0, int max_inline_depth = 1) {
+  std::string to_string(bool pretty = false, bool display_type = false, int indent = 0, int max_inline_depth = 1) {
     std::string s = "";
     if (pretty && indent) {
       s += "\n";
@@ -80,18 +100,18 @@ public:
     }
 
     if (children.size() == 0) {
-      s += canonical_token_repr();
+      s += canonical_token_repr(display_type);
       return s;
     }
     
     s += "(";
-    s += canonical_token_repr();
+    s += canonical_token_repr(display_type);
 
     int md = (pretty) ? max_depth(this) : 0; // max depth is slow.
 
     for (auto child : children) {
       s += " ";
-      s += (pretty && md > max_inline_depth) ? child->to_string(true, indent+1) : child->to_string();
+      s += (pretty && md > max_inline_depth) ? child->to_string(pretty, display_type, indent+1) : child->to_string(pretty, display_type);
     }
     s += ")";
     return s;
