@@ -4,12 +4,13 @@
 #include "types.h"
 
 const std::vector<std::string> basic_types = {
+  "void",
+  "unit",
   "int",
   "float",
   "double",
   "char",
   "bool",
-  "void",
 };
 
 std::map<int, std::string> TypeSet::id_to_type = []() {
@@ -47,3 +48,17 @@ int TypeSet::get_id(std::string type) {
 std::string TypeSet::get_type(int id) {
   return id_to_type[id];
 }
+
+std::string TypeIdList::to_string() {
+    std::string s = "[";
+    for (auto& t : types) {
+      if (std::holds_alternative<int>(t)) {
+        s += std::to_string(std::get<int>(t));
+      } else {
+        s += std::get<TypeIdList*>(t)->to_string();
+      }
+      if (&t != &types.back()) s += ", ";
+    }
+    s += "]";
+    return s;
+  }

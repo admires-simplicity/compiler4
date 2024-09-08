@@ -1,5 +1,10 @@
 add types to expression
 
+add function types -- implement compound types
+  I think I need to do something like std::variant<int, std::vector<std::variant<int>>>... but that doesn't quite make sense
+
+add types to expressions
+
 In order to check whether the function always returns the right value type... just check all returns in the function.
   we can build a function.returns vector when we create the function AST node.
 

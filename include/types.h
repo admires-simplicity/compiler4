@@ -3,8 +3,17 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <variant>
 
 extern const std::vector<std::string> basic_types;
+
+class TypeIdList {
+public:
+  std::vector<std::variant<int, TypeIdList*>> types;
+  TypeIdList() {}
+  TypeIdList(std::vector<std::variant<int, TypeIdList*>> types) : types(types) {}
+  std::string to_string();
+};
 
 class TypeSet {
 public:

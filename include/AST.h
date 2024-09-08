@@ -44,7 +44,7 @@ public:
 
   Type type = Type::literal;
   Token *token;
-  std::optional<int> type_id;
+  std::variant<int, TypeIdList> val_type; // int -- value, TypeIdList -- function
   std::vector<SyntaxNode *> children;
 
   SyntaxNode(std::string string) : token(new Token(string)) {}
