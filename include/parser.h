@@ -5,22 +5,6 @@
 #include "lexer.h"
 #include "AST.h"
 
-// enum class Precedence {
-//   // none,
-//   // assignment, // =
-//   // or_, // or
-//   // and_, // and
-//   // equality, // == !=
-//   // comparison, // < > <= >=
-//   // term, // + -
-//   // factor, // * /
-//   // unary, // ! -
-//   // call, // . ()
-//   // primary
-// };
-
-
-
 enum class Assoc {
   left,
   right,
@@ -184,7 +168,7 @@ private:
         children.push_back(parse());
       }
       lexer.next(); // consume "}"
-      val = new SyntaxNode(SyntaxNode::Type::block, children);
+      val = new SyntaxNode(SyntaxNode::NodeType::block, children);
     } else {
       lexer.next(); // consume token
       bool is_prefix_op = prefix_ops.contains(tkn->literal);
@@ -204,8 +188,8 @@ private:
     tkn = nxt.value();
     if (tkn->literal == "(") { // switch this to a Trie representation...
       SyntaxNode *args = parse_parens();
-      if (args) val = new SyntaxNode(SyntaxNode::Type::apply, std::vector<SyntaxNode*>{val, args});
-      else      val = new SyntaxNode(SyntaxNode::Type::apply, std::vector<SyntaxNode*>{val});
+      if (args) val = new SyntaxNode(SyntaxNode::NodeType::apply, std::vector<SyntaxNode*>{val, args});
+      else      val = new SyntaxNode(SyntaxNode::NodeType::apply, std::vector<SyntaxNode*>{val});
     }
     //else if (tkn->literal == ";") {
     //   lexer.next(); // consume
@@ -295,131 +279,3 @@ private:
 // idea for optimizing parser:
 // instead of checking `token == str`, for a bunch of strings, we could do
 // something like `int parse_rule = trie[token]`, and switch on those...
-
-
-
-
-
-
-
-
-// MAYBE a better solution for operator precedence is just to handle precedence
-// for binary ops and make n-ary ops non-associative.
-
-
-
-// I think the way I will handle precedence for binary and n-ary operators
-// is to just have precedence and associativity for binary ops, but only
-// have precedence for n-ary ops. 
-// I think maybe instead of "associativity" I should have something like
-// self-precedence, i.e. when you encounter A op B op C, instead of asking
-// whether it "groups" as (A op B) op C or A op (B op C) syntactically, you ask
-// which of those identical operators has higher precedence.
-// e.g. something like "eager" vs "lazy" operators...
-
-// this should also work for n-ary operators, e.g.
-// if A then if B then C else E else F
-
-// if_then_else eager: 10
-// eager: if A then (if B then C) else E
-//   so if A then if B then C else E else F gives syntax error because "else F" is dangling
-
-// lazy: if A then (if B then C else E) else F -- fine
-
-// eager -- the first operator should finish first
-// lazy -- the first operator should finish later
-
-
-
-
-
-
-
-// 3 > 4 + 5 * 6
-
-//   >
-//  / \
-// 3   +
-//    / \
-//   4   *
-//      /  \
-//     5    6
-
-
-// 6 * 5 + 4 < 3
-
-//       <
-//      / \
-//     +   3
-//    / \
-//   *   4
-//  / \
-// 6   5
-
-
-
-
-// right leaning tree:
-
-// get_expr():
-//   left = lexer.lex
-  
-//   if ! bin_op(lexer.peek):
-//     return leaf
-   
-//   op = lexer.lex
-//   right = get_expr
-//   return ast_node(op, left, right)
-
-
-// left leaning tree:
-
-// get_expr():
-//   left = lexer.lex
-
-//   while lex.peek:
-  
-//     if ! bin_op(lexer.peek):
-//       return left
-  
-//     op = lexer.lex
-//     right = lexer.lex
-//     left = ast_node(op, left, right)
-
-//   return left
-  
-
-
-
-// 3 * 6 + 2
-// left = 3
-// op = *
-
-
-// 3 > 4 * 5 + 6
-
-//   > : 8
-//  / \
-// 3   + : 10
-//    / \
-//   *   6 (* : 11)
-//  / \
-// 4   5
-
-
-// 1 + 2 + 3
-//     + : 10
-//    / \
-//   +   3 (+ : 10)
-//  / \
-// 1   2  
-
-
-
-// 1 * 2 + 3 * 4
-
-//      +
-//    /   \
-//   *     *
-//  / \   / \
-// 1   2 3   4

@@ -5,46 +5,11 @@
 
 #include "lexer.h"
 #include "types.h"
+#include "options.h"
 
 class SyntaxNode {
-private:
-  int max_depth(SyntaxNode *node) {
-    if (node->children.size() == 0) return 0;
-    int max = 0;
-    for (auto child : node->children) {
-      int depth = max_depth(child);
-      if (depth > max) max = depth;
-    }
-    return max + 1;
-  }
-
-  // std::string val_type_repr() {
-  //   std::string res;
-  //   if (std::holds_alternative<int>(val_type)) res = std::to_string(std::get<int>(val_type));
-  //   else {
-  //     res = "(";
-  //     TypeIdList& type_id_list = std::get<TypeIdList>(val_type);
-  //     for (auto& vt : type_id_list) {
-
-  //     }
-  //   }
-  // }
-
-  std::string val_type_repr() {
-    if (std::holds_alternative<int>(val_type)) return std::to_string(std::get<int>(val_type));
-    else return std::get<TypeIdList>(val_type).to_string();
-  }
-  
-  std::string canonical_token_repr(bool display_type = false) { 
-    if (type == Type::literal) {
-      if (display_type) return val_type_repr() + ":" + token->literal;
-      else return token->literal;
-    }
-    else return token_type_repr[type];
-  }
-
 public:
-  enum class Type {
+  enum class NodeType {
     literal,
     identifier,
     value,
@@ -53,18 +18,18 @@ public:
     program_block,
   };
 
-  std::map<Type, std::string> token_type_repr {
-    {Type::literal, "literal"},
-    {Type::identifier, "identifier"},
-    {Type::value, "value"},
-    {Type::apply, "apply"},
-    {Type::block, "block"}, 
-    {Type::program_block, "program_block"},
+  std::map<NodeType, std::string> token_type_repr {
+    {NodeType::literal, "literal"},
+    {NodeType::identifier, "identifier"},
+    {NodeType::value, "value"},
+    {NodeType::apply, "apply"},
+    {NodeType::block, "block"}, 
+    {NodeType::program_block, "program_block"},
   };
 
-  Type type = Type::literal;
+  NodeType type = NodeType::literal;
   Token *token;
-  std::variant<int, TypeIdList> val_type; // int -- value, TypeIdList -- function
+  Type val_type; // int -- value, TypeIdList -- function // TODO: think about how to actually typecheck Types
   std::vector<SyntaxNode *> children;
 
   SyntaxNode(std::string string) : token(new Token(string)) {}
@@ -73,8 +38,8 @@ public:
   SyntaxNode(Token *token) : token(token) {}
   SyntaxNode(Token *token, std::vector<SyntaxNode *> children) : token(token), children(children) {}
 
-  SyntaxNode(Type type) : type(type) {}
-  SyntaxNode(Type type, std::vector<SyntaxNode *> children) : type(type), children(children) {}
+  SyntaxNode(NodeType type) : type(type) {}
+  SyntaxNode(NodeType type, std::vector<SyntaxNode *> children) : type(type), children(children) {}
 
   ~SyntaxNode() {
     delete token;
@@ -92,7 +57,7 @@ public:
    *                     printed inline. if max_inline_depth = 1, only childless
    *                     nodes will be printed inline.
    */
-  std::string to_string(bool pretty = false, bool display_type = false, int indent = 0, int max_inline_depth = 1) {
+  std::string to_string(bool pretty = false, bool display_type = false,  int max_inline_depth = 1, int indent = 0) {
     std::string s = "";
     if (pretty && indent) {
       s += "\n";
@@ -108,12 +73,34 @@ public:
     s += canonical_token_repr(display_type);
 
     int md = (pretty) ? max_depth(this) : 0; // max depth is slow.
+    // what would be better is to memoize the depth of every node whenever
+    // to_string is called by an external function.
 
     for (auto child : children) {
       s += " ";
-      s += (pretty && md > max_inline_depth) ? child->to_string(pretty, display_type, indent+1) : child->to_string(pretty, display_type);
+      s += (pretty && md > max_inline_depth) ? child->to_string(pretty, display_type, max_inline_depth, indent+1) : child->to_string(pretty, display_type);
     }
     s += ")";
     return s;
   }
+
+private:
+    int max_depth(SyntaxNode *node) {
+    if (node->children.size() == 0) return 0;
+    int max = 0;
+    for (auto child : node->children) {
+      int depth = max_depth(child);
+      if (depth > max) max = depth;
+    }
+    return max + 1;
+  }
+
+  std::string canonical_token_repr(bool display_type = false) { 
+    if (type == NodeType::literal) {
+      if (display_type) return type_print_repr(val_type) + ":" + token->literal;
+      else return token->literal;
+    }
+    else return token_type_repr[type];
+  }
+
 };

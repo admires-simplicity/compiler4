@@ -5,14 +5,14 @@ bool is_fn_decl(SyntaxNode *node) {
     if (node == nullptr) return false;
     if (node->token == nullptr) return false;
     if (node->token->literal == ";") node = node->children[0];
-    if (node->type == SyntaxNode::Type::literal && node->token->literal == "=") node = node->children[0];
+    if (node->type == SyntaxNode::NodeType::literal && node->token->literal == "=") node = node->children[0];
     else return false;
     if (node->token->literal == "->") return true;
     else return false;
 }
 
 bool last_to_return(SyntaxNode *node) {
-    assert(node->type == SyntaxNode::Type::block);
+    assert(node->type == SyntaxNode::NodeType::block);
     bool make_stmt = false;
     SyntaxNode **dest = &node->children[node->children.size()-1];
     SyntaxNode *last_stmt = *dest; //node->children[node->children.size()-1];
@@ -41,7 +41,7 @@ SyntaxNode *get_block_in_fn_defn(SyntaxNode *node) {
 // if we want to make an interpreter we'll need to rework this later.
 SyntaxNode *compile(SyntaxNode *node) {
     // expect block
-    if (node->type != SyntaxNode::Type::block) {
+    if (node->type != SyntaxNode::NodeType::block) {
         std::cerr << "<Compiler> Error: expected block, got " << node->token->literal << "\n";
         return nullptr;
     }
@@ -50,16 +50,16 @@ SyntaxNode *compile(SyntaxNode *node) {
 
     std::vector<SyntaxNode *> function_decls;
     
-    SyntaxNode *main_block = new SyntaxNode(SyntaxNode::Type::block);
+    SyntaxNode *main_block = new SyntaxNode(SyntaxNode::NodeType::block);
     SyntaxNode *main_fn =
         new SyntaxNode(";", {
             new SyntaxNode("=", {
                 new SyntaxNode("->", {
-                    new SyntaxNode(SyntaxNode::Type::apply, {new SyntaxNode("main")}),
+                    new SyntaxNode(SyntaxNode::NodeType::apply, {new SyntaxNode("main")}),
                     new SyntaxNode("int")}),
                 main_block})});
 
-    SyntaxNode *program = new SyntaxNode(SyntaxNode::Type::program_block);
+    SyntaxNode *program = new SyntaxNode(SyntaxNode::NodeType::program_block);
 
     for (auto child : node->children) {
         if (is_fn_decl(child)) {
@@ -73,25 +73,6 @@ SyntaxNode *compile(SyntaxNode *node) {
     }
 
     program->children.push_back(main_fn);
-
-    
-
-
-
-    // std::vector<SyntaxNode*> function_list;
-
-    // SyntaxNode *main_block = new SyntaxNode(new Token(Token::Type::block));
-
-    // gather function definitions into function list,
-    // gather other statements into main definition
-    // for (auto child : node->children) {
-    //     main_block->children.push_back(child);
-    // }
-
-    // SyntaxNode *main_fn = new SyntaxNode(new Token("->"), {
-    //     new SyntaxNode(new Token(""), {}),
-    //     main_block,
-    // });
 
     // TODO: delete node
     return program;   

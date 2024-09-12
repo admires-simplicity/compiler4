@@ -5,6 +5,10 @@
 #include <map>
 #include <variant>
 
+class TypeIdList;
+
+using Type = std::variant<int, TypeIdList>;
+
 extern const std::vector<std::string> basic_types;
 
 class TypeIdList {
@@ -24,3 +28,5 @@ public:
   int get_id(std::string type);
   std::string get_type(int id);
 };
+
+std::string type_print_repr(Type type);

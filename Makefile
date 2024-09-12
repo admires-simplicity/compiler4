@@ -56,15 +56,15 @@ $(MAIN_EXE): $(MAIN_OBJ) $(patsubst $(LIB_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(LIB_SOUR
 	$(CXX) $(MAIN_OBJ) $(patsubst $(LIB_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(LIB_SOURCES)) -o $(MAIN_EXE)
 
 # Rule for creating other executables in the current directory
-%: $(BUILD_DIR)/%.o
-	$(CXX) $< -o $@
+%: $(BUILD_DIR)/%.o $(patsubst $(LIB_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(LIB_SOURCES))
+	$(CXX) $^ -o $@
 
 # Create build directory if it doesn't exist
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 # Generate individual targets for each executable, except main
-$(foreach exe,$(OTHER_EXECUTABLES),$(eval $(exe): $(BUILD_DIR)/$(exe).o))
+$(foreach exe,$(OTHER_EXECUTABLES),$(eval $(exe): $(BUILD_DIR)/$(exe).o $(patsubst $(LIB_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(LIB_SOURCES))))
 
 # Default goal is to build all executables
 .DEFAULT_GOAL := all

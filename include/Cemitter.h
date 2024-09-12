@@ -23,7 +23,7 @@ std::map<std::string, std::string> c_std_include_map = {
 };
 
 bool emit_literal(SyntaxNode *node) {
-  assert(node->type == SyntaxNode::Type::literal);
+  assert(node->type == SyntaxNode::NodeType::literal);
   assert(node->token);
   std::cout << node->token->literal;
   return true;
@@ -50,7 +50,7 @@ bool emit(SyntaxNode *node) {
 
   switch (node->type) {
     //case SyntaxNode::Type::identifier:
-    case SyntaxNode::Type::literal:
+    case SyntaxNode::NodeType::literal:
       // "syntax" types will have to be here for now
       if (c_infix_ops.contains(node->token->literal)) {
         //std::cout << "(";
@@ -90,7 +90,7 @@ bool emit(SyntaxNode *node) {
         if (lh->token->literal == "->") { // typed function defn
           SyntaxNode *call_sig = lh->children[0];
           SyntaxNode *rtype = lh->children[1];
-          assert(call_sig->type == SyntaxNode::Type::apply);
+          assert(call_sig->type == SyntaxNode::NodeType::apply);
           emit(rtype);
           std::cout << " ";
           emit(call_sig); // TODO: this is broken?
@@ -150,7 +150,7 @@ bool emit(SyntaxNode *node) {
     // case SyntaxNode::Type::number:
     //   return emit_literal(node);
 
-    case SyntaxNode::Type::apply:
+    case SyntaxNode::NodeType::apply:
       // std::cout << node->token->literal << "(";
       // emit(node->children[0]);
       // std::cout << ")";
@@ -160,13 +160,13 @@ bool emit(SyntaxNode *node) {
       std::cout << ")";
       break;
 
-    case SyntaxNode::Type::block:
+    case SyntaxNode::NodeType::block:
       std::cout << "{\n";
       emit_block(node);
       std::cout << "}\n";
       break;
 
-    case SyntaxNode::Type::program_block:
+    case SyntaxNode::NodeType::program_block:
       printf("#include <stdio.h>\n");
       emit_block(node);
       break;

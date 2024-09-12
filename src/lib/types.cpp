@@ -1,7 +1,9 @@
 #include <map>
 #include <string>
+#include <cassert>
 
 #include "types.h"
+#include "options.h"
 
 const std::vector<std::string> basic_types = {
   "void",
@@ -50,15 +52,22 @@ std::string TypeSet::get_type(int id) {
 }
 
 std::string TypeIdList::to_string() {
-    std::string s = "[";
-    for (auto& t : types) {
-      if (std::holds_alternative<int>(t)) {
-        s += std::to_string(std::get<int>(t));
-      } else {
-        s += std::get<TypeIdList*>(t)->to_string();
-      }
-      if (&t != &types.back()) s += ", ";
+  std::string s = "[";
+  for (auto& t : types) {
+    if (std::holds_alternative<int>(t)) {
+      s += std::to_string(std::get<int>(t));
+    } else {
+      s += std::get<TypeIdList*>(t)->to_string();
     }
-    s += "]";
-    return s;
+    if (&t != &types.back()) s += ", ";
+  }    s += "]";
+  return s;
+}
+
+std::string type_print_repr(Type type) {
+  if (std::holds_alternative<int>(type)) {
+    if (flags & PARSE_TREE_TYPE_NAMES) return TypeSet::id_to_type[std::get<int>(type)];
+    else /*if (flags & PARSE_TREE_TYPE_IDS)*/ return std::to_string(std::get<int>(type));
   }
+  else return std::get<TypeIdList>(type).to_string();
+}

@@ -4,6 +4,10 @@ In order to check whether the function always returns the right value type... ju
   we can build a function.returns vector when we create the function AST node.
 
 
+TODO(BUG): The programs like `{ 1 + 1 }`, and `{ 1 + 1; 1 + 1 } don't compile
+  correctly. The last line in the block is not being treated as a return
+  statement. I think I probably just have to `last_to_return` on `main_fn` in
+  `compiler`?
 
 if expr is block-expr, we need to make block-expr into a void function...
   unless if-expr is returning, or using its value...
@@ -11,7 +15,8 @@ if expr is block-expr, we need to make block-expr into a void function...
 we should maybe have 2 block AST types:
   block
   block-with-value
-  
+   
+TODO: fix makefile -- seems to recompile a lot of things that shouldn't need to be recompiled
 
 
 
