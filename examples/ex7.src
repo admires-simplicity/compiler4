@@ -1,0 +1,22 @@
+// lexer test
+
+printf("%d", 1 + 2);
+//printf("%d", 1 + /* comment */ 2); // this line fails for some reason having to to do with parse_parens (??)
+//printf("%d", 1 + /* comment1 */ /* comment2 */ 2);
+
+1 + /*comment*/ 2; // works
+1 + /*comment1*/ /*comment2*/ 2; //works
+
+ident//comment + 2; // should skip everything after "//"
+;
+
+ident/*comment*/ + 2; // should skip everything between "/*...*/"
+;
+
+ident/*comment1*/ifier; // should lex as "ident" "ifier".
+// Cemitter prints this line as "identifier;"
+// I think what is happening is that this line parses as (ident) (; ifier)
+// and since Cemitter just prints identifiers without a space, it prints "identifier;"
+// TODO: fix this
+
+print;

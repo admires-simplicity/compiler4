@@ -6,6 +6,7 @@
 #include <deque>
 #include <map>
 #include <optional>
+#include <cassert>
 
 class Token {
 public:
@@ -71,7 +72,7 @@ private:
 
   std::optional<Token*> lex_next() {
     std::string literal;
-    skip_whitespace();
+    skip_whitespace_and_comments();
 
     if (istream.eof()) {
       return std::nullopt;
@@ -83,6 +84,7 @@ private:
     bool not_num = true; // TODO: test this because I changed the logic on it
 
     // lex number
+    // lexes a series of digits with at most one decimal point
     if (num(c)) {
       not_num = false;
       bool found_dot = false;
@@ -95,7 +97,9 @@ private:
         literal += c;
       }
     }
+
     // lex string
+    // lexes a series of characters between two quote marks
     else if (c == '"') {
       while (istream.peek() != '"') {
         c = istream.get();
@@ -103,51 +107,37 @@ private:
         literal += c;
       }
       c = istream.get(); // closing quote
-      if (istream.eof()) {
-        return std::nullopt; // not sure if this is how i want to do this
-      }
       literal += c;
     }
+
     // lex identifier
+    // lexes a series of characters that are not whitespace or syntax characters
+    // and stops if it finds a coment
     else if (!syntax_chars.contains(c)) {
-      // while (ident_char(istream.peek())) {
+      char last_c = 0;
       while (!whitespace(istream.peek()) && !syntax_chars.contains(istream.peek())) {
         c = istream.get();
         if (istream.eof()) break;
+        if ((c == '/' || c == '*') && last_c == '/') {
+          literal = literal.substr(0, literal.size()-1);
+          istream.putback(c);
+          istream.putback(last_c);
+          break;
+        }
         literal += c;
+        last_c = c;
       }
-    }
-    // else -- syntax char (do nothing)
-    
-    if (literal.substr(0,2) == "//") {
-      while (istream.peek() != '\n' && !istream.eof()) {
-        c = istream.get();
-      }
-      return std::nullopt;
     }
 
-    else if (literal.size() > 2 && literal.substr(0,2) == "/*") {
-      while (literal.substr(literal.size()-2, 2) != "*/" && !istream.eof()) {
-        c = istream.get();
-        literal += c;
-      }
-      return std::nullopt;
-    }
+    // else -- syntax char (do nothing)
+
+    assert(literal.size() > 0); // sanity check
 
     return new Token(literal);
   }
 
 
-  std::set<char> syntax_chars = {'(', ')', '[', ']', '.', ',', ';', /*'\n',*/
-    // // arithmetic ops
-    // '-', '+', '*', '/', '>', '<', '^', '=', 
-    // // logical ops
-    // '!',
-  };
-
-  // std::set<std::string> reserved_lexemes = { // lexemes that cannot be within identifiers
-  //   "(", ")", "[", "]", "+", "*", ".", ";",
-  // };
+  std::set<char> syntax_chars = {'(', ')', '[', ']', '.', ',', ';', };
 
   bool whitespace(char c) {
     return c == ' ' || c == '\t' || c == '\n';
@@ -159,17 +149,65 @@ private:
     }
   }
 
-  // bool alpha(char c) {
-  //   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-  // }
+  void skip_whitespace_and_comments() {
+    while (!istream.eof()) {
+      skip_whitespace();
+      if (istream.peek() != '/') {
+        return;
+      }
+      char c1 = istream.get();
+      if (istream.peek() != '/' && istream.peek() != '*') {
+        istream.putback(c1);
+        return;
+      }
+
+      char c2 = istream.get();
+
+      // "//" comment
+      if (c2 == '/') {
+        while (istream.peek() != '\n' && !istream.eof()) {
+          istream.get(); // consume next
+        }
+      }
+
+      // "/*...*/" comment
+      else if (c2 == '*') {
+        c1 = istream.get(); // we have to consume 2 characters so that the loop condition
+        c2 = istream.get(); // doesn't return false on the first iteration in
+        // the condition that the comment has a / directly after the first *
+        // like --> /*/
+        while (!(c1 == '*' && c2 == '/') && !istream.eof()) {
+          c1 = c2;
+          c2 = istream.get(); // consume next
+        }
+      }
+
+      else {
+        istream.putback(c2);
+        istream.putback(c1);
+      }
+
+      // after reading comment, we are either
+      // (1) at eof
+      // (2) at the beginning of a new line
+      // in which case we are either
+      // (2a) at whitespace
+      // (2b) at a comment
+      // (2c) at a valid lexeme
+      // or we are
+      // (3) at a valid lexeme
+      
+      // case (1) loop will terminate, since the loop condition is false
+      // case (2a) we will skip whitespace and continue
+      // case (2b) we will read another comment and continue
+      // case (2c) we will return
+      // case (3) we will return
+
+      // so the next iteration of the loop should have valid effects
+    }
+  }
 
   bool num(char c) {
     return c >= '0' && c <= '9';
   }
-
-  // bool ident_char(char c) {
-  //   //return !(whitespace(c) || syntax_chars.contains(c));
-  //   return !whitespace(c) && !syntax_chars.contains(c) && !istream.eof();
-  //   //return !(whitespace(c) || reserved_lexemes.contains(std::string(1, c)));
-  // }
 };

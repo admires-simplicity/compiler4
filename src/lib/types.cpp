@@ -9,6 +9,7 @@ const std::vector<std::string> basic_types = {
   "void",
   "unit",
   "int",
+  "long",
   "float",
   "double",
   "char",
