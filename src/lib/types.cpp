@@ -4,14 +4,24 @@
 
 #include "types.h"
 #include "options.h"
+#include "util.h"
 
 const std::vector<std::string> basic_types = {
+  "unassigned type", // first type a value gets on parsing/lexing
   "void",
   "unit",
+
+  // numeric types
+  ///"num", // idk if this is relevant
   "int",
-  "long",
+  "i32",
+  "i64",
   "float",
-  "double",
+  "f32",
+  "f64",
+  // "rat", // might be too based for the world to handle...
+  // "real", // is actually a dependent type (int -> rat)
+
   "char",
   "bool",
 };
@@ -71,4 +81,10 @@ std::string type_print_repr(Type type) {
     else /*if (flags & PARSE_TREE_TYPE_IDS)*/ return std::to_string(std::get<int>(type));
   }
   else return std::get<TypeIdList>(type).to_string();
+}
+
+int infer_type_id(std::string s) {
+    if (is_int(s)) return TypeSet::type_to_id["int"];
+    else if (is_num(s)) return TypeSet::type_to_id["float"];
+    else return TypeSet::type_to_id["unassigned type"];
 }

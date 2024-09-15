@@ -81,7 +81,7 @@ private:
     char c = istream.get();
     literal += c;
 
-    bool not_num = true; // TODO: test this because I changed the logic on it
+    bool not_num = true;
 
     // lex number
     // lexes a series of digits with at most one decimal point

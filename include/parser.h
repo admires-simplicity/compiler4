@@ -4,6 +4,8 @@
 #include <cassert>
 #include "lexer.h"
 #include "AST.h"
+#include "types.h"
+//#include ""
 
 enum class Assoc {
   left,
@@ -170,13 +172,20 @@ private:
       lexer.next(); // consume "}"
       val = new SyntaxNode(SyntaxNode::NodeType::block, children);
     } else {
+      // value which is not a paren or block -- literal or prefix op
       lexer.next(); // consume token
       bool is_prefix_op = prefix_ops.contains(tkn->literal);
+      
+      // function definition (pretty sure this is actually broken/deprecated (?))
       if (is_prefix_op && tkn->literal == "fn") {
         val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal]), parse()});
-      } else if (is_prefix_op) {
+      } 
+      // prefix op
+      else if (is_prefix_op) {
         val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal])});
-      } else {
+      }
+      // literal
+      else {
         val = new SyntaxNode(tkn);
       }
     }

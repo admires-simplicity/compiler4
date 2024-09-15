@@ -12,3 +12,18 @@ std::istringstream *filename_to_str(std::string filename) {
     buf << "{\n" << file.rdbuf() << "\n}"; // interpret as block
     return new std::istringstream(buf.str());
 }
+
+bool is_int(std::string s) {
+    for (char c : s) {
+        if (!isdigit(c)) return false;
+    }
+    return true;
+}
+
+bool is_num(std::string s) {
+    bool found_dot = false;
+    for (char c : s) {
+        if (c == '.' && !found_dot) found_dot = true;
+        else if (!isdigit(c)) return false;
+    }
+}

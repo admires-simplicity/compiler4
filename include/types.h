@@ -30,3 +30,9 @@ public:
 };
 
 std::string type_print_repr(Type type);
+
+int infer_type_id(std::string s); // infer literal value type id
+
+Type BasicType(int id);
+Type BasicType(std::string type);
+Type CompoundType(TypeIdList types);

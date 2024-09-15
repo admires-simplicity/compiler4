@@ -37,6 +37,7 @@ public:
   
   SyntaxNode(Token *token) : token(token) {}
   SyntaxNode(Token *token, std::vector<SyntaxNode *> children) : token(token), children(children) {}
+  SyntaxNode(Token *token, Type type) : token(token), val_type(type) {}
 
   SyntaxNode(NodeType type) : type(type) {}
   SyntaxNode(NodeType type, std::vector<SyntaxNode *> children) : type(type), children(children) {}
