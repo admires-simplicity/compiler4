@@ -1,5 +1,8 @@
+
+
+#include "types.h"
 #include "scope.h"
 
 Scope global_scope {
-  {"+", CompoundType({"int", "int", "int"})},
+  {"+", TypeIdList{"int", "int", "int"}},
 };

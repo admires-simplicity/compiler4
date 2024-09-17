@@ -4,35 +4,43 @@
 #include <set>
 #include <map>
 #include <variant>
+#include <initializer_list>
 
 class TypeIdList;
 
-using Type = std::variant<int, TypeIdList>;
-
 extern const std::vector<std::string> basic_types;
-
-class TypeIdList {
-public:
-  std::vector<std::variant<int, TypeIdList*>> types;
-  TypeIdList() {}
-  TypeIdList(std::vector<std::variant<int, TypeIdList*>> types) : types(types) {}
-  std::string to_string();
-};
 
 class TypeSet {
 public:
   static std::map<int, std::string> id_to_type;
   static std::map<std::string, int> type_to_id;
-  bool is_type(std::string type);
-  bool add_type(std::string type);
-  int get_id(std::string type);
-  std::string get_type(int id);
+  static bool is_type(std::string type);
+  static bool add_type(std::string type);
+  static int get_id(std::string type);
+  static std::string get_type(int id);
+};
+
+using Type = std::variant<int, TypeIdList>;
+
+class TypeIdList {
+private:
+  using InternTypeIdList = std::vector<std::variant<int, TypeIdList*>>;
+public:
+  InternTypeIdList types;
+  TypeIdList(std::initializer_list<std::variant<int, std::string, TypeIdList*>> types) {
+    for (auto& t : types) {
+      if (std::holds_alternative<int>(t)) {
+        this->types.push_back(std::get<int>(t));
+      } else if (std::holds_alternative<std::string>(t)) {
+        this->types.push_back(TypeSet::get_id(std::get<std::string>(t)));
+      } else {
+        this->types.push_back(std::get<TypeIdList*>(t));
+      }
+    }
+  }
+  std::string to_string();
 };
 
 std::string type_print_repr(Type type);
 
 int infer_type_id(std::string s); // infer literal value type id
-
-Type BasicType(int id);
-Type BasicType(std::string type);
-Type CompoundType(TypeIdList types);

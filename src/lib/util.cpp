@@ -23,7 +23,11 @@ bool is_int(std::string s) {
 bool is_num(std::string s) {
     bool found_dot = false;
     for (char c : s) {
-        if (c == '.' && !found_dot) found_dot = true;
+        if (c == '.') {
+            if (found_dot) return false;
+            found_dot = true;
+        }
         else if (!isdigit(c)) return false;
     }
+    return true;
 }
