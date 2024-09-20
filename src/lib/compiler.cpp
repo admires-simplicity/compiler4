@@ -36,6 +36,13 @@ SyntaxNode *get_block_in_fn_defn(SyntaxNode *node) {
     return node;
 }
 
+bool semantic_analysis(SyntaxNode *node) {
+    bool found_error = false;
+
+    return !found_error;
+}
+
+
 
 // for now this is only compiling a whole source file.
 // if we want to make an interpreter we'll need to rework this later.
@@ -73,6 +80,10 @@ SyntaxNode *compile(SyntaxNode *node) {
     }
 
     program->children.push_back(main_fn);
+    // TODO: Right now we just add every line in the top level to the main block
+    //       but that's wrong because then global vars don't work. Fix that.
+
+    bool well_formed = semantic_analysis(program);
 
     // TODO: delete node
     return program;   

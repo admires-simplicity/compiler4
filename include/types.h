@@ -11,9 +11,9 @@ class TypeIdList;
 extern const std::vector<std::string> basic_types;
 
 class TypeSet {
+  static std::map<int, std::string>& get_id_to_type();
+  static std::map<std::string, int>& get_type_to_id();
 public:
-  static std::map<int, std::string> id_to_type;
-  static std::map<std::string, int> type_to_id;
   static bool is_type(std::string type);
   static bool add_type(std::string type);
   static int get_id(std::string type);

@@ -6,6 +6,7 @@
 #include "lexer.h"
 #include "types.h"
 #include "options.h"
+#include "bimap.h"
 
 class SyntaxNode {
 public:
@@ -16,16 +17,16 @@ public:
     apply,
     block,
     program_block,
+
+    add,
   };
 
-  std::map<NodeType, std::string> token_type_repr {
-    {NodeType::literal, "literal"},
-    {NodeType::identifier, "identifier"},
-    {NodeType::value, "value"},
-    {NodeType::apply, "apply"},
-    {NodeType::block, "block"}, 
-    {NodeType::program_block, "program_block"},
-  };
+  static Bimap<NodeType, std::string> NodeType_repr;
+
+  std::unordered_map<SyntaxNode::NodeType, Type>& get_NodeType_to_Type_map();
+  Type NodeType_to_Type(NodeType type);
+
+
 
   NodeType type = NodeType::literal;
   Token *token;
@@ -37,10 +38,10 @@ public:
   
   SyntaxNode(Token *token) : token(token) {}
   SyntaxNode(Token *token, std::vector<SyntaxNode *> children) : token(token), children(children) {}
-  SyntaxNode(Token *token, Type type) : token(token), val_type(type) {}
+  //SyntaxNode(Token *token, Type type) : token(token), val_type(type) {}
 
-  SyntaxNode(NodeType type) : type(type) {}
-  SyntaxNode(NodeType type, std::vector<SyntaxNode *> children) : type(type), children(children) {}
+  SyntaxNode(NodeType type) : type(type), val_type(NodeType_to_Type(type)) {}
+  SyntaxNode(NodeType type, std::vector<SyntaxNode *> children) : type(type), children(children), val_type(NodeType_to_Type(type)) {}
 
   ~SyntaxNode() {
     delete token;
@@ -50,8 +51,10 @@ public:
   }
 
   std::string type_name() {
-    return token_type_repr[type];
+    return NodeType_repr[type];
   }
+
+  void set_type();
 
   /*
    * max_inline_depth -- maximum depth of a node which for its children to be
@@ -66,12 +69,12 @@ public:
     }
 
     if (children.size() == 0) {
-      s += canonical_token_repr(display_type);
+      s += node_signature(display_type);
       return s;
     }
     
     s += "(";
-    s += canonical_token_repr(display_type);
+    s += node_signature(display_type);
 
     int md = (pretty) ? max_depth(this) : 0; // max depth is slow.
     // what would be better is to memoize the depth of every node whenever
@@ -96,12 +99,12 @@ private:
     return max + 1;
   }
 
-  std::string canonical_token_repr(bool display_type = false) { 
+  std::string node_signature(bool display_type = false) { 
     if (type == NodeType::literal) {
       if (display_type) return type_print_repr(val_type) + ":" + token->literal;
       else return token->literal;
     }
-    else return token_type_repr[type];
+    else return NodeType_repr[type];
   }
 
 };

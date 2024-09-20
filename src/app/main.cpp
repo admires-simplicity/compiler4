@@ -16,7 +16,9 @@
 
 #include "options.h"
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) {  
+  Type t = TypeIdList{"int", "int", "int"};
+
   flags = read_flags(argc, argv);
 
   Lexer lexer((argc > 1) ? *filename_to_str(argv[argc-1]) : std::cin);
