@@ -16,7 +16,7 @@
 
 #include "options.h"
 
-int main(int argc, char** argv) {  
+int main(int argc, char** argv) { 
   Type t = TypeIdList{"int", "int", "int"};
 
   flags = read_flags(argc, argv);

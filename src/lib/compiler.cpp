@@ -1,7 +1,7 @@
 #include <cassert>
 #include "compiler.h"
 
-bool is_fn_decl(SyntaxNode *node) {
+bool is_fn_def(SyntaxNode *node) {
     if (node == nullptr) return false;
     if (node->token == nullptr) return false;
     if (node->token->literal == ";") node = node->children[0];
@@ -30,6 +30,95 @@ bool last_to_return(SyntaxNode *node) {
     return true;
 }
 
+SyntaxNode *comma_to_arg_list(SyntaxNode *node) {
+    assert(node != nullptr && 1);
+    //std::cout << "comma_to_arg_list : " << node->to_string() << "\n";
+
+    assert(node->type == SyntaxNode::NodeType::literal && node->token->literal == ",");
+    SyntaxNode *rest = node->children[1];
+    Type ret_type = TypeIdList{"int"}; // TODO: this is a placeholder 
+
+    assert(rest != nullptr && 2);
+
+    node->children.erase(node->children.begin() + 1);  
+
+    while (rest != nullptr && rest->type == SyntaxNode::NodeType::literal && rest->token->literal == ",") {
+        //std::cout << rest->children[0]->to_string() << "\n";
+        node->children.push_back(rest->children[0]);
+        rest = rest->children[1];
+    }
+    assert(rest != nullptr && 3);
+    node->children.push_back(rest);
+
+    //std::cout << "comma_to_arg_list : " << node->to_string() << "\n";
+
+    return node;
+}
+/* where
+    // TODO: I just had the idea that I could just write a program that handles
+    //       tests for C++ programs à la Pyret.
+    comma_to_arg_list(SyntaxNode(",", {SyntaxNode("a", SyntaxNode(",", {SyntaxNode("b", SyntaxNode(",", {SyntaxNode("c", SyntaxNode("d"))}))}))})) ==
+    SyntaxNode("arg_list", {SyntaxNode("a"), SyntaxNode("b"), SyntaxNode("c", SyntaxNode("d"))});
+*/
+
+// TODO: this function is a mess. clean it up.
+void to_fn_def(SyntaxNode *node) {
+    //std::cout << "to_fn_def : " << node->to_string() << "\n";
+
+    // we shouldn't have to do is_fn_def because we only call this function immediately
+    // after checking is_fn_def
+    assert(node->type == SyntaxNode::NodeType::literal && node->token->literal == ";");
+    // TODO: technically this test is incorrect because it is semantically legal
+    // to have the last statement in a block to be a function definition with
+    // no semicolon... maybe we should just make that illegal at the program_block level?
+    node = node->children[0];
+    assert(node->type == SyntaxNode::NodeType::literal && node->token->literal == "=");
+    node->type = SyntaxNode::NodeType::fn_def; 
+    SyntaxNode *sig = node->children[0];
+    assert(sig->type == SyntaxNode::NodeType::literal && sig->token->literal == "->");
+    // sig = (-> child[0]=(apply child[0]=<name> child[1]=<args>) child[1]=<ret_type>)
+    SyntaxNode *name = sig->children[0]->children[0];
+    SyntaxNode *ret_type = sig->children[1];
+    //std::cout << "ret type is " << ret_type->to_string() << "\n";
+
+    SyntaxNode *arg_list = sig->children[0]->children[1];
+    if (arg_list->type == SyntaxNode::NodeType::literal && arg_list->token->literal == ",") {
+        comma_to_arg_list(arg_list); // TODO: we should convert all commas, not just ones inside fn defns, so is this really the right place for this?
+    }
+    
+    //arg_list->children.push_back(ret_type);
+
+    // TODO: this is wrong because it only handles atomic types and not compound/function types
+    TypeVarVec fn_type;
+    for (auto arg : arg_list->children) {
+        if (arg->type == SyntaxNode::NodeType::literal && arg->token->literal == ":") {
+            fn_type.push_back(arg->children[1]->token->literal); // TODO: change this to something like
+            //fn_type.push_back(infer_type_id(arg->children[1]->token->literal));
+        }
+        else {
+            fn_type.push_back(arg->token->literal);
+        }
+    }
+    fn_type.push_back(ret_type->token->literal);
+    //node->type = SyntaxNode::NodeType::literal;
+    node->val_type = fn_type;
+    // TODO: I should actually be chaing these into type nodes before inserting them as "types"
+
+    SyntaxNode *body = node->children[1];
+
+    node->children[0] = arg_list; // TODO: this is incorrect because we're leaking node->children[0]
+    // TODO: maybe change node->children[0] type to some explicit arg_list type
+
+    node->children.insert(node->children.begin(), name);
+
+    // TODO: we should actually be checking arg types before we set the type of the function,
+    //       that way we can just do arg->val_type instead of arg->token->literal
+
+    //std::cout << "node->val_type : " << type_to_string(node->val_type) << "\n";
+
+    // std::cout << "to_fn_def : " << node->to_string(false, true) << "\n";
+}
+
 SyntaxNode *get_block_in_fn_defn(SyntaxNode *node) {
     if (node->token->literal == ";") node = node->children[0];
     node = node->children[1]; // (= (-> ...) <block>) -> <block>
@@ -38,6 +127,12 @@ SyntaxNode *get_block_in_fn_defn(SyntaxNode *node) {
 
 bool semantic_analysis(SyntaxNode *node) {
     bool found_error = false;
+
+    //std::cout << SyntaxNode::NodeType_repr[node->type] << (node->token ? " " + node->token->literal : "") << "\n";
+
+    for (auto child : node->children) {
+        semantic_analysis(child);
+    }
 
     return !found_error;
 }
@@ -69,8 +164,9 @@ SyntaxNode *compile(SyntaxNode *node) {
     SyntaxNode *program = new SyntaxNode(SyntaxNode::NodeType::program_block);
 
     for (auto child : node->children) {
-        if (is_fn_decl(child)) {
+        if (is_fn_def(child)) {
             last_to_return(get_block_in_fn_defn(child)); // TODO: this only works assuming fn is actually a block
+            to_fn_def(child);
             program->children.push_back(child);
         }
         // TODO: if is var, put it in global vars
@@ -82,8 +178,14 @@ SyntaxNode *compile(SyntaxNode *node) {
     program->children.push_back(main_fn);
     // TODO: Right now we just add every line in the top level to the main block
     //       but that's wrong because then global vars don't work. Fix that.
+    //to_fn_def(main_fn);
 
     bool well_formed = semantic_analysis(program);
+    if (!well_formed) {
+        std::cerr << "<Compiler> Error: type error found -- aborting compilation\n";
+        // TODO: delete node
+        return nullptr;
+    }
 
     // TODO: delete node
     return program;   

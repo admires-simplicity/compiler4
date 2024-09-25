@@ -17,17 +17,19 @@ public:
   static bool is_type(std::string type);
   static bool add_type(std::string type);
   static int get_id(std::string type);
-  static std::string get_type(int id);
+  static std::string get_type_name(int id);
 };
 
 using Type = std::variant<int, TypeIdList>;
+using TypeVarVec = std::vector<std::variant<int, std::string, TypeIdList*>>;
+
+std::string type_to_string(Type type, bool _typename=true); // TODO: just make Type into a class so this can be a method
 
 class TypeIdList {
 private:
-  using InternTypeIdList = std::vector<std::variant<int, TypeIdList*>>;
-public:
-  InternTypeIdList types;
-  TypeIdList(std::initializer_list<std::variant<int, std::string, TypeIdList*>> types) {
+  using TypeIdVec = std::vector<std::variant<int, TypeIdList*>>;
+  template<typename T>
+  void make_types(T types) { // TODO: put this in a cpp file. should I add type id type checking here?
     for (auto& t : types) {
       if (std::holds_alternative<int>(t)) {
         this->types.push_back(std::get<int>(t));
@@ -36,9 +38,23 @@ public:
       } else {
         this->types.push_back(std::get<TypeIdList*>(t));
       }
-    }
+    }  
+  }
+public:
+  TypeIdVec types;
+  TypeIdList(std::initializer_list<std::variant<int, std::string, TypeIdList*>> types) {
+    make_types(types);  
+  }
+  TypeIdList(std::vector<std::variant<int, std::string, TypeIdList*>> types) {
+    make_types(types);
   }
   std::string to_string();
+
+  int size() { return types.size(); }
+
+  std::variant<int, TypeIdList*> operator[](int i) {
+    return types[i];
+  }
 };
 
 std::string type_print_repr(Type type);

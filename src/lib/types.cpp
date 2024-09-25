@@ -26,6 +26,18 @@ const std::vector<std::string> basic_types = {
   "bool",
 };
 
+
+std::string type_to_string(Type type, bool _typename) {
+  if (std::holds_alternative<int>(type)) {
+    int id = std::get<int>(type);
+    if (_typename) return TypeSet::get_type_name(id);
+    else return std::to_string(id);
+  }
+  else {
+    return std::get<TypeIdList>(type).to_string();
+  }
+}
+
 std::map<int, std::string>& TypeSet::get_id_to_type() {
   static std::map<int, std::string> id_to_type = []() {
     std::map<int, std::string> id_to_type;
@@ -49,6 +61,16 @@ std::map<std::string, int>& TypeSet::get_type_to_id() {
   return type_to_id;
 }
 
+std::string type_to_id(Type type, bool _typenames=true) {
+  if (std::holds_alternative<int>(type)) {
+    if (_typenames) return TypeSet::get_type_name(std::get<int>(type));
+    else return std::to_string(std::get<int>(type));
+  }
+  else {
+    return std::get<TypeIdList>(type).to_string();
+  }
+}
+
 bool TypeSet::is_type(std::string type) {
   return get_type_to_id().find(type) != get_type_to_id().end();
 }
@@ -65,7 +87,7 @@ int TypeSet::get_id(std::string type) {
   return get_type_to_id()[type];
 }
 
-std::string TypeSet::get_type(int id) {
+std::string TypeSet::get_type_name(int id) {
   return get_id_to_type()[id];
 }
 
@@ -84,8 +106,9 @@ std::string TypeIdList::to_string() {
 
 std::string type_print_repr(Type type) {
   if (std::holds_alternative<int>(type)) {
-    if (flags & PARSE_TREE_TYPE_NAMES) return TypeSet::get_type(std::get<int>(type));
+    if (flags & PARSE_TREE_TYPE_NAMES) return TypeSet::get_type_name(std::get<int>(type));
     else /*if (flags & PARSE_TREE_TYPE_IDS)*/ return std::to_string(std::get<int>(type));
+    // not really else if because we use type_print_repr sometimes without flags
   }
   else return std::get<TypeIdList>(type).to_string();
 }

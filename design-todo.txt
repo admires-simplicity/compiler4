@@ -1,3 +1,19 @@
+TODO: fix makefile -- seems to recompile a lot of things that shouldn't need to be recompiled
+TODO: also make release and debug separate targets
+
+TODO: think I broke SyntaxNode::to_string (Maybe just fn_def doesn't work?)
+
+TODO:
+  I really have to change SyntaxNode into a class hierarchy so I can create
+  more expressive names for child nodes instead of just `children[0]`, etc.
+
+TODO:
+  write my own testing software for C++
+
+TODO (design consideration):
+  using `:` without a space is a syntax error... do I want that?
+
+
 add types to expression
 
 In order to check whether the function always returns the right value type... just check all returns in the function.
@@ -16,10 +32,12 @@ we should maybe have 2 block AST types:
   block
   block-with-value
    
-TODO: fix makefile -- seems to recompile a lot of things that shouldn't need to be recompiled
 
 TODO: implement compound datatypes
 
+
+TODO: add module system
+TODO: add global variables properly scoped by module
 
 
 TODO: add more tests (always)

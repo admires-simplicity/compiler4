@@ -6,9 +6,12 @@ Bimap<SyntaxNode::NodeType, std::string> SyntaxNode::NodeType_repr = {
   {NodeType::literal, "literal"},
   {NodeType::identifier, "identifier"},
   {NodeType::value, "value"},
+  {NodeType::fn_def, "fn_def"},
   {NodeType::apply, "apply"},
   {NodeType::block, "block"}, 
   {NodeType::program_block, "program_block"},
+
+  {NodeType::arg_list, "arg_list"},
 
   {NodeType::add, "+"},
 };

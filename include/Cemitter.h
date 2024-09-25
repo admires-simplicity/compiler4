@@ -73,20 +73,11 @@ bool emit(SyntaxNode *node) {
         emit(ident);
 
       }
-      
-      else if (node->token->literal == ",") {
-        emit(node->children[0]);
-        std::cout << ", ";
-        emit(node->children[1]);
-      }
 
-      else if (node->token->literal == "=") {
+      else if (node->token->literal == "=") { // TODO: delete this. it will be deprecated soon. (After I fix main defn in compiler.cpp)
         SyntaxNode *lh = node->children[0];
         SyntaxNode *rh = node->children[1];
 
-        // taking
-        // (; (= (-> (apply fib (: x int)) int) (block (else (then (if (< x 2)) 1) (+ (apply fib (- x 1)) (apply fib (- x 2)))))))
-        // as a paradigmatic example
         if (lh->token->literal == "->") { // typed function defn
           SyntaxNode *call_sig = lh->children[0];
           SyntaxNode *rtype = lh->children[1];
@@ -96,9 +87,12 @@ bool emit(SyntaxNode *node) {
           emit(call_sig); // TODO: this is broken?
           emit(rh);
         }
-
-        else { // for now, var. technically untyped fn would fit here.
-
+      }
+      
+      else if (node->token->literal == ",") {
+        for (int i = 0; i < node->children.size(); i++) {
+          emit(node->children[i]);
+          if (i < node->children.size() - 1) std::cout << ", ";
         }
       }
 
@@ -150,10 +144,23 @@ bool emit(SyntaxNode *node) {
     // case SyntaxNode::Type::number:
     //   return emit_literal(node);
 
+    case SyntaxNode::NodeType::fn_def: {
+      SyntaxNode *name = node->children[0];
+      SyntaxNode *params = node->children[1];
+      SyntaxNode *body= node->children[2];
+
+      TypeIdList &param_types = std::get<TypeIdList>(node->val_type); // TODO: think about, just using params directly?
+      std::cout << TypeSet::get_type_name(std::get<int>(param_types[param_types.size() - 1]))
+        << " " << name->token->literal << "(";
+      emit(params);
+      std::cout << ") {\n";
+      emit(body);
+      std::cout << "}\n";
+      break;
+    }
+      
+
     case SyntaxNode::NodeType::apply:
-      // std::cout << node->token->literal << "(";
-      // emit(node->children[0]);
-      // std::cout << ")";
       emit(node->children[0]);
       std::cout << "(";
       if (node->children.size() > 1) emit(node->children[1]);
@@ -172,26 +179,9 @@ bool emit(SyntaxNode *node) {
       break;
 
     default:
-      //std::cerr << "<CEmitter> Error: unhandled node type " << node->token->literal << "\n";
       std::cerr << "<CEmitter> Error: unhandled node type " << node->type_name() << "\n";
       return false;
   }
 
-  // if (node->children.empty()) {
-  //   emit_literal(node);
-  // } else if (c_infix_ops.contains(node->token->literal)) {
-  //   if (node->children.size() != 2) {
-  //     std::cerr << "<CEmitter> Error: infix operator " << node->token->literal << " must have exactly 2 children\n";
-  //     return false;
-  //   }
-  //   std::cout << "(";
-  //   emit(node->children[0]);
-  //   std::cout << ") " << node->token->literal << " (";
-  //   emit(node->children[1]);
-  //   std::cout << ")";
-  // } else {
-  //   std::cerr << "<CEmitter> Error: unhandled node type " << node->token->literal << "\n";
-  //   return false;
-  // }
   return true;
 }

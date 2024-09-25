@@ -14,9 +14,12 @@ public:
     literal,
     identifier,
     value,
+    fn_def,
     apply,
     block,
     program_block,
+
+    arg_list,
 
     add,
   };
@@ -89,7 +92,7 @@ public:
   }
 
 private:
-    int max_depth(SyntaxNode *node) {
+  int max_depth(SyntaxNode *node) {
     if (node->children.size() == 0) return 0;
     int max = 0;
     for (auto child : node->children) {
@@ -99,12 +102,21 @@ private:
     return max + 1;
   }
 
-  std::string node_signature(bool display_type = false) { 
-    if (type == NodeType::literal) {
-      if (display_type) return type_print_repr(val_type) + ":" + token->literal;
-      else return token->literal;
+  bool has_type() { // TODO: sort of hacky
+    switch (type) {
+      case NodeType::literal:
+      case NodeType::fn_def:
+        return true;
+      default:
+        return false;
     }
-    else return NodeType_repr[type];
+  }
+
+  std::string node_signature(bool display_type = false) {
+    return
+      ((display_type) ? (type_print_repr(val_type) + ":") : "")
+        +
+      ((type == NodeType::literal) ? token->literal : NodeType_repr[type]);
   }
 
 };
