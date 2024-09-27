@@ -7,8 +7,6 @@
 #include "AST.h"
 #include "types.h"
 
-Scope global_scope;
-
 class Scope {
 public:
   Scope *parent;
@@ -22,3 +20,5 @@ public:
   std::optional<SyntaxNode*> get(std::string name);
   bool exists(std::string name);
 };
+
+extern Scope global_scope;
