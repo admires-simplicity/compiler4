@@ -23,19 +23,36 @@ int main(int argc, char** argv) {
 
   Lexer lexer((argc > 1) ? *filename_to_str(argv[argc-1]) : std::cin);
 
+  // parsing
   SyntaxNode *parsed = Parser(lexer).parse();
-
-  if (flags & PARSE_TREE_ONLY) {
-
-    if (parsed) std::cout << parsed->to_string(flags & PRETTY_PARSE_TREE, flags & PARSE_TREE_TYPES, 1) << std::endl;
-    else std::cout << "parsing failed" << std::endl;
+  if (parsed == nullptr) {
+    std::cout << "parsing failed" << std::endl;
     return 0;
   }
 
-  if (parsed) {
-    SyntaxNode *compiled = compile(parsed);
-    emit(compiled);
+  if (flags & PARSE_TREE_ONLY) {
+    std::cout << parsed->to_string(flags & PRETTY_PARSE_TREE, flags & PARSE_TREE_TYPES, 1) << std::endl;
+    return 0;
   }
+
+  // compile
+  SyntaxNode *compiled = compile(parsed);
+  if (compiled == nullptr) {
+    std::cout << "compilation failed" << std::endl;
+    return 0;
+  }
+
+  if (flags & OUTPUT_IR) {
+    std::cout << compiled->to_string(true, true, 1) << std::endl;
+    return 0;
+  }
+
+  if (flags & DO_NOT_EMIT) {
+    return 0;
+  }
+
+  // emit
+  emit(compiled);
 
   return 0;
 }

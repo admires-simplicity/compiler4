@@ -73,6 +73,7 @@ void to_fn_def(SyntaxNode *node) {
     // no semicolon... maybe we should just make that illegal at the program_block level?
     node = node->children[0];
     assert(node->type == SyntaxNode::NodeType::literal && node->token->literal == "=");
+
     node->type = SyntaxNode::NodeType::fn_def; 
     SyntaxNode *sig = node->children[0];
     assert(sig->type == SyntaxNode::NodeType::literal && sig->token->literal == "->");
@@ -81,24 +82,33 @@ void to_fn_def(SyntaxNode *node) {
     SyntaxNode *ret_type = sig->children[1];
     //std::cout << "ret type is " << ret_type->to_string() << "\n";
 
-    SyntaxNode *arg_list = sig->children[0]->children[1];
-    if (arg_list->type == SyntaxNode::NodeType::literal && arg_list->token->literal == ",") {
-        comma_to_arg_list(arg_list); // TODO: we should convert all commas, not just ones inside fn defns, so is this really the right place for this?
-    }
-    
-    //arg_list->children.push_back(ret_type);
-
-    // TODO: this is wrong because it only handles atomic types and not compound/function types
     TypeVarVec fn_type;
-    for (auto arg : arg_list->children) {
-        if (arg->type == SyntaxNode::NodeType::literal && arg->token->literal == ":") {
-            fn_type.push_back(arg->children[1]->token->literal); // TODO: change this to something like
-            //fn_type.push_back(infer_type_id(arg->children[1]->token->literal));
+    SyntaxNode *arg_list;
+
+    if (sig->children[0]->children.size() > 1) {
+        arg_list = sig->children[0]->children[1];
+        if (arg_list->type == SyntaxNode::NodeType::literal && arg_list->token->literal == ",") {
+            comma_to_arg_list(arg_list); // TODO: we should convert all commas, not just ones inside fn defns, so is this really the right place for this?
+        } else {
+            arg_list = new SyntaxNode(",", {arg_list}); // TODO: too hacky... make better
         }
-        else {
-            fn_type.push_back(arg->token->literal);
+
+        //arg_list->children.push_back(ret_type);
+
+        // TODO: this is wrong because it only handles atomic types and not compound/function types
+        for (auto arg : arg_list->children) {
+            if (arg->type == SyntaxNode::NodeType::literal && arg->token->literal == ":") {
+                fn_type.push_back(arg->children[1]->token->literal); // TODO: change this to something like
+                //fn_type.push_back(infer_type_id(arg->children[1]->token->literal));
+            }
+            else {
+                fn_type.push_back(arg->token->literal);
+            }
         }
+    } else {
+        arg_list = new SyntaxNode(",", {}); // todo: awful
     }
+
     fn_type.push_back(ret_type->token->literal);
     //node->type = SyntaxNode::NodeType::literal;
     node->val_type = fn_type;
@@ -174,6 +184,8 @@ SyntaxNode *compile(SyntaxNode *node) {
             main_block->children.push_back(child);
         }
     }
+
+    to_fn_def(main_fn); // TODO: this is broken for some reason
 
     program->children.push_back(main_fn);
     // TODO: Right now we just add every line in the top level to the main block
