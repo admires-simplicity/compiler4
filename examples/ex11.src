@@ -1,0 +1,19 @@
+f(x : int) -> int = {
+  let y : int = 0;
+  if (x > 1) then {
+    y = -1;
+    y = y + 1;
+    y = y + 1;
+  } else {
+    y = -10;
+  };
+  if (y > 0) then x else y;
+};
+
+printf("%d\n", f(16));
+printf("%d\n", f(-2));
+
+/*expect:
+16
+-10
+*/

@@ -7,6 +7,9 @@ TODO:
   I really have to change SyntaxNode into a class hierarchy so I can create
   more expressive names for child nodes instead of just `children[0]`, etc.
 
+TODO: for some reason functions are emitted as blocks in blocks instead of just
+      blocks
+
 TODO:
   write my own testing software for C++
 
@@ -31,7 +34,12 @@ if expr is block-expr, we need to make block-expr into a void function...
 we should maybe have 2 block AST types:
   block
   block-with-value
-   
+
+TODO: there is a fairly serious inconsistency/unintended behaviour in the parser
+      in that expressions only stop when they meet a token with lower precedence (or something like that, not 100% sure)
+      than the current expression, meaning for example "1 + 1 2 + 2" is actually
+      a valid way of writing two expressions in sequence instead of being forced
+      to write "1 + 1; 2 + 2". IDK if I want this behaviour or not...
 
 TODO: implement compound datatypes
 

@@ -11,6 +11,33 @@ bool is_fn_def(SyntaxNode *node) {
     else return false;
 }
 
+SyntaxNode *to_returning_segment(SyntaxNode *node) {
+    if (node->token->literal == "return") return node;
+    else if (node->token->literal == ";") {
+        node->children[0] = to_returning_segment(node->children[0]);
+    }
+    else if (node->token->literal == "then") {
+        node->children[1] = to_returning_segment(node->children[1]);
+    }
+    else if (node->token->literal == "else") {
+        node->children[0] = to_returning_segment(node->children[0]);
+        node->children[1] = to_returning_segment(node->children[1]);
+    }
+    else if (node->type == SyntaxNode::NodeType::block) {
+        for (auto &child : node->children) {
+            if (child->token->literal == "then"
+             || child->token->literal == "else"
+             || child->type == SyntaxNode::NodeType::block) {
+                child = to_returning_segment(child);
+            }
+        }
+    }
+    else {
+        node = new SyntaxNode("return", {node});
+    }
+    return node; // since we only ever return node, this is kind of superfluous...
+}
+
 bool last_to_return(SyntaxNode *node) {
     assert(node->type == SyntaxNode::NodeType::block);
     bool make_stmt = false;
@@ -25,7 +52,8 @@ bool last_to_return(SyntaxNode *node) {
         last_stmt = *dest;
     }
 
-    last_stmt->children = { new SyntaxNode("return", last_stmt->children) }; // TODO: is this overkill? Shouldn't we only ever need last_stmt->child[0] ?
+    //last_stmt->children = { new SyntaxNode("return", last_stmt->children) }; // TODO: is this overkill? Shouldn't we only ever need last_stmt->child[0] ?
+    *dest = to_returning_segment(last_stmt);
 
     return true;
 }

@@ -16,6 +16,7 @@ std::set<std::string> c_infix_ops = {
   "*",
   "/",
   "^",
+  "=",
 };
 
 std::map<std::string, std::string> c_std_include_map = {
@@ -98,23 +99,37 @@ bool emit(SyntaxNode *node) {
 
       else if (node->token->literal == "then") {
         emit(node->children[0]);
-        std::cout << " ? (";
-        emit(node->children[1]);
-        std::cout << ")";
+ 
+        if (node->children[1]->type == SyntaxNode::NodeType::block) {
+          emit(node->children[1]);
+        }
+        else {
+          std::cout << "{\n";
+          emit(node->children[1]);
+          std::cout << ";";
+          std::cout << "\n}\n";  
+        }
       }
 
       else if (node->token->literal == "if") {
-        std::cout << "(";
+        std::cout << "if (";
         emit(node->children[0]);
-        std::cout << ")";
+        std::cout << ") ";
       }
 
       else if (node->token->literal == "else") {
-        std::cout << "(";
         emit(node->children[0]);
-        std::cout << " : (";
-        emit(node->children[1]);
-        std::cout << "))";
+
+        if (node->children[1]->type == SyntaxNode::NodeType::block) {
+          std::cout << "else ";
+          emit(node->children[1]);
+        }
+        else {
+          std::cout << "else {\n";
+          emit(node->children[1]);
+          std::cout << ";";
+          std::cout << "\n}\n";
+        }
       }
       
       else if (node->token->literal == "return") {

@@ -2,6 +2,7 @@
 CXX := g++
 CXXFLAGS := -std=c++20 -Iinclude
 DEBUGFLAGS := -g
+DEPFLAGS := -MMD -MP
 
 # Source and build directories for lib and app
 DIRS = lib app
@@ -14,6 +15,13 @@ APP_OBJS := $(patsubst src/app/%.cpp,build/app/%.o,$(wildcard src/app/*.cpp))
 
 DEBUG_LIB_OBJS := $(patsubst src/lib/%.cpp,debug/lib/%.o,$(wildcard src/lib/*.cpp))
 DEBUG_APP_OBJS := $(patsubst src/app/%.cpp,debug/app/%.o,$(wildcard src/app/*.cpp))
+
+# Dependency files
+LIB_DEPS := $(LIB_OBJS:.o=.d)
+APP_DEPS := $(APP_OBJS:.o=.d)
+
+DEBUG_LIB_DEPS := $(DEBUG_LIB_OBJS:.o=.d)
+DEBUG_APP_DEPS := $(DEBUG_APP_OBJS:.o=.d)
 
 # Targets
 EXE := compiler4
@@ -48,11 +56,11 @@ debug/%: debug/app/%.o $(DEBUG_LIB_OBJS)
 
 # Object file compilation rule (release)
 build/%.o: src/%.cpp | $(BUILD_DIRS)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c $< -o $@
 
 # Debug object file compilation rule
 debug/%.o: src/%.cpp | $(DEBUG_DIRS)
-	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) $(DEPFLAGS) -c $< -o $@
 
 # Create directories if they don't exist
 $(BUILD_DIRS) $(DEBUG_DIRS):
@@ -61,6 +69,9 @@ $(BUILD_DIRS) $(DEBUG_DIRS):
 # Clean
 clean: clean-release clean-debug
 clean-release:
-	rm -rf build $(EXE) $(EXES)
+	rm -rf build $(EXE) $(EXES) $(LIB_DEPS) $(APP_DEPS)
 clean-debug:
-	rm -rf debug $(DEBUG_EXE) $(DEBUG_EXES)
+	rm -rf debug $(DEBUG_EXE) $(DEBUG_EXES) $(DEBUG_LIB_DEPS) $(DEBUG_APP_DEPS)
+
+# Include dependency files if they exist
+-include $(LIB_DEPS) $(APP_DEPS) $(DEBUG_LIB_DEPS) $(DEBUG_APP_DEPS)

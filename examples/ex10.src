@@ -1,0 +1,15 @@
+f(x : int, y : int) -> int = {
+  let a : int = x + y;
+  let b : int = (3 * x * x) + 2 * y;
+  let c : int = 2 * x + (y * y);
+  let d : int = a + b + c;
+  return (a * b) + (c * d)
+};
+
+printf("f(%d, %d) = %d\n", 4, 8, f(4, 8));
+printf("f(%d, %d) = %d\n", 5, 7, f(5, 7));
+
+/*expect:
+f(4, 8) = 11424
+f(5, 7) = 10508
+*/
