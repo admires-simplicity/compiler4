@@ -46,6 +46,8 @@ public:
   SyntaxNode(NodeType type) : type(type), val_type(NodeType_to_Type(type)) {}
   SyntaxNode(NodeType type, std::vector<SyntaxNode *> children) : type(type), children(children), val_type(NodeType_to_Type(type)) {}
 
+  SyntaxNode(Type type) : val_type(type) {}
+
   ~SyntaxNode() {
     delete token;
     for (auto child : children) {

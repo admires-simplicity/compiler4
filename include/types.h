@@ -8,9 +8,10 @@
 
 class TypeIdList;
 
-extern const std::vector<std::string> basic_types;
+extern const std::array<std::string, 12> basic_types;
 
 class TypeSet {
+public:
   static std::map<int, std::string>& get_id_to_type();
   static std::map<std::string, int>& get_type_to_id();
 public:
@@ -59,4 +60,4 @@ public:
 
 std::string type_print_repr(Type type);
 
-int infer_type_id(std::string s); // infer literal value type id
+int infer_literal_type_id(std::string s); // infer literal value type id

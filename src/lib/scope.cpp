@@ -4,7 +4,8 @@
 #include "scope.h"
 
 Scope global_scope {
-  //{"+", TypeIdList{"int", "int", "int"}},
+  {"+", new SyntaxNode(TypeIdList{"int", "int", "int"})},
+  {"test_v", new SyntaxNode(1)},
 };
 
 bool Scope::add(std::string name, SyntaxNode* type) {

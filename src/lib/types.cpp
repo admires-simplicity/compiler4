@@ -6,7 +6,8 @@
 #include "options.h"
 #include "util.h"
 
-const std::vector<std::string> basic_types = {
+#include <array>
+constexpr std::array<std::string, 12> basic_types = { // TODO: turn this into static local reference initialization
   "unassigned type", // first type a value gets on parsing/lexing
   "void",
   "unit",
@@ -25,7 +26,6 @@ const std::vector<std::string> basic_types = {
   "char",
   "bool",
 };
-
 
 std::string type_to_string(Type type, bool _typename) {
   if (std::holds_alternative<int>(type)) {
@@ -116,7 +116,7 @@ std::string type_print_repr(Type type) {
   else return std::get<TypeIdList>(type).to_string();
 }
 
-int infer_type_id(std::string s) {
+int infer_literal_type_id(std::string s) {
     if (is_int(s)) return TypeSet::get_id("int");
     else if (is_num(s)) return TypeSet::get_id("float");
     else return TypeSet::get_id("unassigned type");

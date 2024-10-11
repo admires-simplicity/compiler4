@@ -1,5 +1,7 @@
 #include <cassert>
 #include "compiler.h"
+#include "scope.h"
+#include "util.h"
 
 bool is_fn_def(SyntaxNode *node) {
     if (node == nullptr) return false;
@@ -163,14 +165,46 @@ SyntaxNode *get_block_in_fn_defn(SyntaxNode *node) {
     return node;
 }
 
-bool semantic_analysis(SyntaxNode *node) {
+bool semantic_analysis(SyntaxNode *node, Scope& scope) {
     bool found_error = false;
 
     //std::cout << SyntaxNode::NodeType_repr[node->type] << (node->token ? " " + node->token->literal : "") << "\n";
 
     for (auto child : node->children) {
-        semantic_analysis(child);
+        semantic_analysis(child, scope);
     }
+
+    switch (node->type) {
+        case SyntaxNode::NodeType::literal:
+            if (node->children.size() == 0) {
+                if (scope.exists(node->token->literal)) {
+                    node->val_type = scope.get(node->token->literal).value()->val_type;
+                }
+                else {
+                    node->val_type = infer_literal_type_id(node->token->literal);
+                    if (std::get<int>(node->val_type) == TypeSet::get_id("unassigned type")) {
+                        std::cerr << "<Compiler> Error: unable to assign type for value \"" << node->token->literal << "\"\n";
+                        // TODO: add line and pos numbers
+                        found_error = true;
+                    }
+                }
+            }
+            // case for unary and bin ops
+            else {
+                if (scope.exists(node->token->literal)) {
+                    node->val_type = scope.get(node->token->literal).value()->val_type;
+                }
+                else {
+                    std::cerr << "<Compiler> Error: unknown operator \"" << node->token->literal << "\"\n";
+                    found_error = true;
+                }
+            }
+            break;
+        
+
+    }
+
+
 
     return !found_error;
 }
@@ -220,7 +254,7 @@ SyntaxNode *compile(SyntaxNode *node) {
     //       but that's wrong because then global vars don't work. Fix that.
     //to_fn_def(main_fn);
 
-    bool well_formed = semantic_analysis(program);
+    bool well_formed = semantic_analysis(program, global_scope);
     if (!well_formed) {
         std::cerr << "<Compiler> Error: type error found -- aborting compilation\n";
         // TODO: delete node
