@@ -1,6 +1,7 @@
 #include <map>
 #include <string>
 #include <cassert>
+#include <functional>
 
 #include "types.h"
 #include "options.h"
@@ -27,6 +28,11 @@ constexpr std::array<std::string, 12> basic_types = { // TODO: turn this into st
   "bool",
 };
 
+constexpr std::array<std::string, 2> syntax_types = {
+  "type",
+  "identifier",
+};
+
 std::string type_to_string(Type type, bool _typename) {
   if (std::holds_alternative<int>(type)) {
     int id = std::get<int>(type);
@@ -38,26 +44,40 @@ std::string type_to_string(Type type, bool _typename) {
   }
 }
 
+template<typename K, typename V, std::size_t N>
+void add_arr_to_map(
+    std::map<K, V>& m,
+    const std::array<std::string, N>& arr,
+    std::function<void(std::map<K, V>&, std::string, int)> f) {
+  for (const auto& type_name : arr) {
+    f(m, type_name, m.size());
+  }
+}
+
+template<typename K, typename V>
+std::map<K, V> make_map(std::function<void(std::map<K, V>&, std::string, int)> f) {
+  std::map<K, V> m;
+  auto add = [&](const auto& arr) {
+    add_arr_to_map(m, arr, f);
+  };
+  add(basic_types);
+  add(syntax_types);
+  return m;
+}
+
 std::map<int, std::string>& TypeSet::get_id_to_type() {
-  static std::map<int, std::string> id_to_type = []() {
-    std::map<int, std::string> id_to_type;
-    for (int i = 0; i < basic_types.size(); i++)
-    {
-      id_to_type[i] = basic_types[i];
-    }
-    return id_to_type;
-  }();
+  static std::map<int, std::string> id_to_type =
+  make_map<int, std::string>([](auto& m, auto type_name, auto id) {
+    m[id] = type_name;
+  });
   return id_to_type;
 }
 
 std::map<std::string, int>& TypeSet::get_type_to_id() {
-  static std::map<std::string, int> type_to_id = []() {
-    std::map<std::string, int> type_to_id;
-    for (int i = 0; i < basic_types.size(); i++) {
-      type_to_id[basic_types[i]] = i;
-    }
-    return type_to_id;
-  }();
+  static std::map<std::string, int> type_to_id =
+  make_map<std::string, int>([](auto& m, auto type_name, auto id) {
+    m[type_name] = id;
+  });
   return type_to_id;
 }
 
@@ -72,7 +92,7 @@ std::string type_to_id(Type type, bool _typenames=true) {
 }
 
 bool TypeSet::is_type(std::string type) {
-  return get_type_to_id().find(type) != get_type_to_id().end();
+  return get_type_to_id().contains(type);
 }
 
 bool TypeSet::add_type(std::string type) {
