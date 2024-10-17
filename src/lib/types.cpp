@@ -2,6 +2,7 @@
 #include <string>
 #include <cassert>
 #include <functional>
+#include <optional>
 
 #include "types.h"
 #include "options.h"
@@ -91,6 +92,7 @@ std::string type_to_id(Type type, bool _typenames=true) {
   }
 }
 
+// TODO: this is wrong because we should break it up into internal_type and user_type
 bool TypeSet::is_type(std::string type) {
   return get_type_to_id().contains(type);
 }
@@ -140,4 +142,23 @@ int infer_literal_type_id(std::string s) {
     if (is_int(s)) return TypeSet::get_id("int");
     else if (is_num(s)) return TypeSet::get_id("float");
     else return TypeSet::get_id("unassigned type");
+}
+
+// TODO: expand this to work for type strings of compound (function) types
+// should maybe be changed to interpret_type(SyntaxNode* node) ?
+std::optional<Type> TypeSet::interpret_type(std::string type) {
+  if (is_type(type)) return TypeSet::get_id(type);
+  else return std::nullopt;
+}
+
+bool TypeIdList::operator==(const TypeIdList& other) const {
+  // if (types.size() != other.types.size()) return false;
+  // for (int i = 0; i < types.size(); i++) {
+  //   if (types[i] != other.types[i]) return false;
+  // }
+  return true;
+}
+
+bool TypeIdList::operator!=(const TypeIdList& other) const {
+  return !(*this == other);
 }

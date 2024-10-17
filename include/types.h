@@ -5,8 +5,10 @@
 #include <map>
 #include <variant>
 #include <initializer_list>
+#include <optional>
 
 class TypeIdList;
+using Type = std::variant<int, TypeIdList>;
 
 extern const std::array<std::string, 12> basic_types;
 
@@ -19,9 +21,9 @@ public:
   static bool add_type(std::string type);
   static int get_id(std::string type);
   static std::string get_type_name(int id);
+  static std::optional<Type> interpret_type(std::string type);
 };
 
-using Type = std::variant<int, TypeIdList>;
 using TypeVarVec = std::vector<std::variant<int, std::string, TypeIdList*>>;
 
 std::string type_to_string(Type type, bool _typename=true); // TODO: just make Type into a class so this can be a method
@@ -56,6 +58,10 @@ public:
   std::variant<int, TypeIdList*> operator[](int i) {
     return types[i];
   }
+
+  bool operator==(const TypeIdList& other) const;
+
+  bool operator!=(const TypeIdList& other) const;
 };
 
 std::string type_print_repr(Type type);

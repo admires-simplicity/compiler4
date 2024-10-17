@@ -1,4 +1,7 @@
 #include <cassert>
+#include <iostream>
+#include <optional>
+
 #include "compiler.h"
 #include "scope.h"
 #include "util.h"
@@ -191,8 +194,54 @@ bool semantic_analysis(SyntaxNode *node, Scope& scope) {
             }
             // case for unary and bin ops
             else {
+                // TODO: make better
                 if (scope.exists(node->token->literal)) {
                     node->val_type = scope.get(node->token->literal).value()->val_type;
+                }
+                else if (node->token->literal == ":") {
+                    node->val_type = TypeSet::get_id("void");
+                }
+                else if (node->token->literal == "=") {
+                    // SyntaxNode *lhs = node->children[0];
+                    // SyntaxNode *type = lhs->children[0];
+                    // SyntaxNode *ident = lhs->children[1];
+                    // SyntaxNode *rhs = node->children[1];
+                    // if (rhs->val_type != TypeSet::interpret_type(type->token->literal)) {
+                    //     std::cerr << "<Compiler> Error: type mismatch in assignment\n";
+                    //     found_error = true;
+                    // }
+                    // else {
+                    //     scope.add(ident->token->literal, rhs);
+                    //     // TODO: this is a hack because we should be interpreting rhs
+                    //     // ourselves if it can be evaluated as a compile time constant,
+                    //     // but here we're just offloading that to the target language
+                    //     // compiler.
+                    // }
+                }
+                else if (node->token->literal == "let") {
+                    SyntaxNode *eq = node->children[0];
+                    SyntaxNode *type_decl = eq->children[0];
+                    SyntaxNode *ident = type_decl->children[0];
+                    SyntaxNode *type_node = type_decl->children[1];
+                    SyntaxNode *value = eq->children[1];
+                    std::optional<Type> type = TypeSet::interpret_type(type_node->token->literal);
+                    if (value->val_type != type) {
+                        std::cerr << "<Compiler> Error: type mismatch in let declaration\n";
+                        found_error = true;
+                    }
+                    if (scope.exists(ident->token->literal)) {
+                        std::cerr << "<Compiler> Error: redeclaration of variable \"" << ident->token->literal << "\"\n";
+                        found_error = true;
+                    }
+                    if (type == std::nullopt) {
+                        std::cerr << "<Compiler> Error: unknown type \"" << type_node->token->literal << "\"\n";
+                        found_error = true;
+                    }
+                    if (!found_error) {
+                        scope.add(ident->token->literal, value); // TODO: when we add compile time value interpreting we'll have to change this
+                        ident->val_type = TypeSet::get_id("identifier");
+                        type_node->val_type = TypeSet::get_id("type");
+                    }
                 }
                 else {
                     std::cerr << "<Compiler> Error: unknown operator \"" << node->token->literal << "\"\n";
@@ -203,8 +252,6 @@ bool semantic_analysis(SyntaxNode *node, Scope& scope) {
         
 
     }
-
-
 
     return !found_error;
 }
