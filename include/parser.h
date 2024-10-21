@@ -181,10 +181,6 @@ private:
       lexer.next(); // consume token
       bool is_prefix_op = prefix_ops.contains(tkn->literal);
       
-      // // function definition (pretty sure this is actually broken/deprecated (?))
-      // if (is_prefix_op && tkn->literal == "fn") {
-      //   val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal]), parse()});
-      // } 
       // prefix op
       if (is_prefix_op) {
         //val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal])});
@@ -202,19 +198,10 @@ private:
     if (!nxt.has_value()) return val;
 
     tkn = nxt.value();
-    if (tkn->literal == "(") { // switch this to a Trie representation...
+    if (tkn->literal == "(") { // TODO: switch this to a Trie representation?
       ArgListNode *args = parse_parens();
-      // if (args) val = new SyntaxNode(SyntaxNode::NodeType::apply, std::vector<SyntaxNode*>{val, args});
-      // else      val = new SyntaxNode(SyntaxNode::NodeType::apply, std::vector<SyntaxNode*>{val});
       val = new ApplyNode(val, args);
-    }
-    //else if (tkn->literal == ";") {
-    //   lexer.next(); // consume
-    //   // for now, we'll just treat the whole expression as a statement
-    //   // if we decide to add an actual statement type, we'll might need to do
-    //   // something different here
-    // }
-    
+    }    
 
     return val;
   }
