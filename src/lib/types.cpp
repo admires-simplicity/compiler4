@@ -9,8 +9,10 @@
 #include "util.h"
 
 #include <array>
-constexpr std::array<std::string, 12> basic_types = { // TODO: turn this into static local reference initialization
+constexpr std::array<std::string, 13> basic_types = { // TODO: turn this into static local reference initialization
   "unassigned type", // first type a value gets on parsing/lexing
+  "dynamic",
+
   "void",
   "unit",
 

@@ -10,7 +10,7 @@
 class TypeIdList;
 using Type = std::variant<int, TypeIdList>;
 
-extern const std::array<std::string, 12> basic_types;
+extern const std::array<std::string, 13> basic_types;
 
 class TypeSet {
 public:

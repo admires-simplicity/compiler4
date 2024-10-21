@@ -97,22 +97,24 @@ std::map<uint32_t, BinPrecedence> binary_precedence = {
 
   {300, {Assoc::left, 2}}, // 'return'
 
-  {120, {Assoc::left, 3}}, // these are supposed to be "postfix" ops, but
-  {121, {Assoc::left, 3}}, // I gave them "binop" precedences just to compare in
-  {122, {Assoc::left, 3}}, // can_bind_left ... TODO: fix this?
+  {3, {Assoc::right, 3}},
+
+
+  {120, {Assoc::left, 4}}, // these are supposed to be "postfix" ops, but
+  {121, {Assoc::left, 4}}, // I gave them "binop" precedences just to compare in
+  {122, {Assoc::left, 4}}, // can_bind_left ... TODO: fix this?
 
   //if, then, else
-  {200, {Assoc::left, 6}},
-  {201, {Assoc::left, 5}},
-  {202, {Assoc::left, 4}},
+  {200, {Assoc::left, 7}},
+  {201, {Assoc::left, 6}},
+  {202, {Assoc::left, 5}},
   
-  {1, {Assoc::left, 7}},
-  {2, {Assoc::right, 8}},
-  {3, {Assoc::right, 9}},
-  {4, {Assoc::right, 10}},
+  {1, {Assoc::left, 9}},
+  {2, {Assoc::right, 10}},
+  {4, {Assoc::right, 11}},
 
-  {8, {Assoc::left, 11}},
-  {9, {Assoc::left, 11}},
+  {8, {Assoc::left, 12}},
+  {9, {Assoc::left, 12}},
   {10, {Assoc::left, 16}},
   {11, {Assoc::left, 16}},
   {12, {Assoc::left, 21}},
@@ -137,19 +139,21 @@ public:
   }
 
 private:
-  uint16_t nesting = 0;
-
-  SyntaxNode *parse_parens() {
+  ArgListNode *parse_parens() {
     Token *tkn = lexer.next().value();
     assert(tkn->literal == "(");
-    uint16_t nest = nesting;
-    ++nesting;
-    SyntaxNode *val = parse();
+
+    std::vector<SyntaxNode*> args;
+
+    while (lexer.peek().value()->literal != ")") {
+      args.push_back(parse_expr(","));
+      if (lexer.peek().value()->literal == ",") lexer.next(); // consume comma
+    }
+
     Token *nxt = lexer.next().value(); // advance / skip ")"
-    --nesting;
     assert(nxt->literal == ")");
-    assert(nesting == nest);
-    return val;
+
+    return (args.size()) ? new ArgListNode(args) : nullptr;
   }
 
   // this function is a slight misnomer, since it handles parens and prefix ops
@@ -170,23 +174,26 @@ private:
         children.push_back(parse());
       }
       lexer.next(); // consume "}"
-      val = new SyntaxNode(SyntaxNode::NodeType::block, children);
+      //val = new SyntaxNode(SyntaxNode::NodeType::block, children);
+      val = new BlockNode(children);
     } else {
       // value which is not a paren or block -- literal or prefix op
       lexer.next(); // consume token
       bool is_prefix_op = prefix_ops.contains(tkn->literal);
       
-      // function definition (pretty sure this is actually broken/deprecated (?))
-      if (is_prefix_op && tkn->literal == "fn") {
-        val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal]), parse()});
-      } 
+      // // function definition (pretty sure this is actually broken/deprecated (?))
+      // if (is_prefix_op && tkn->literal == "fn") {
+      //   val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal]), parse()});
+      // } 
       // prefix op
-      else if (is_prefix_op) {
-        val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal])});
+      if (is_prefix_op) {
+        //val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal])});
+        val = new ApplyNode(new ValueNode(tkn), new ArgListNode({parse_expr(syntax_ids[tkn->literal])}));
       }
       // literal
       else {
-        val = new SyntaxNode(tkn);
+        //val = new SyntaxNode(tkn);
+        val = new ValueNode(tkn);
       }
     }
 
@@ -196,9 +203,10 @@ private:
 
     tkn = nxt.value();
     if (tkn->literal == "(") { // switch this to a Trie representation...
-      SyntaxNode *args = parse_parens();
-      if (args) val = new SyntaxNode(SyntaxNode::NodeType::apply, std::vector<SyntaxNode*>{val, args});
-      else      val = new SyntaxNode(SyntaxNode::NodeType::apply, std::vector<SyntaxNode*>{val});
+      ArgListNode *args = parse_parens();
+      // if (args) val = new SyntaxNode(SyntaxNode::NodeType::apply, std::vector<SyntaxNode*>{val, args});
+      // else      val = new SyntaxNode(SyntaxNode::NodeType::apply, std::vector<SyntaxNode*>{val});
+      val = new ApplyNode(val, args);
     }
     //else if (tkn->literal == ";") {
     //   lexer.next(); // consume
@@ -255,12 +263,18 @@ private:
     Token *op = lexer.next().value();
     if (bin_ops.contains(op->literal)) {
       SyntaxNode *right = parse_expr(syntax_ids[op->literal]); //(1)
-      return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
+      //return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
+      return new ApplyNode(new ValueNode(op), new ArgListNode({left, right}));
     } else {
-      return new SyntaxNode(op, std::vector<SyntaxNode*>{left});
+      //return new SyntaxNode(op, std::vector<SyntaxNode*>{left});
+      return new ApplyNode(new ValueNode(op), new ArgListNode({left}));
     }
   }
   
+  SyntaxNode *parse_expr(std::string last_op) {
+    return parse_expr(syntax_ids[last_op]);
+  }
+
   SyntaxNode *parse_expr(uint32_t last_op_id) {
     SyntaxNode *left = parse_value();
 
