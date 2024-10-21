@@ -93,11 +93,11 @@ std::map<uint32_t, BinPrecedence> binary_precedence = {
   // doesn't matter because precedence only matters when comparing identical
   // operators, and we should never have id = 0.
 
-  {110, {Assoc::left, 1}},
+  {110, {Assoc::left, 1}}, // ';'
 
   {300, {Assoc::left, 2}}, // 'return'
 
-  {3, {Assoc::right, 3}},
+  {3, {Assoc::right, 3}}, // ','
 
 
   {120, {Assoc::left, 4}}, // these are supposed to be "postfix" ops, but
@@ -139,14 +139,29 @@ public:
   }
 
 private:
-  ArgListNode *parse_parens() {
+  SyntaxNode *parse_parens() {
+    Token *tkn = lexer.next().value();
+    assert(tkn->literal == "(");
+
+    SyntaxNode *expr = parse_expr(0);
+
+    Token *nxt = lexer.next().value();
+    assert(nxt->literal == ")");
+
+    return expr;
+  }
+
+  ArgListNode *parse_arglist() {
     Token *tkn = lexer.next().value();
     assert(tkn->literal == "(");
 
     std::vector<SyntaxNode*> args;
 
     while (lexer.peek().value()->literal != ")") {
-      args.push_back(parse_expr(","));
+      args.push_back(parse_expr("let")); // TODO: this is a hack because I can't
+      // do parse_expr(",") to parse a value up to a comma because comma is
+      // right-assoc, and I don't have a general way to get an operator with
+      // precedence minimally greater than a given operator.
       if (lexer.peek().value()->literal == ",") lexer.next(); // consume comma
     }
 
@@ -199,7 +214,7 @@ private:
 
     tkn = nxt.value();
     if (tkn->literal == "(") { // TODO: switch this to a Trie representation?
-      ArgListNode *args = parse_parens();
+      ArgListNode *args = parse_arglist();
       val = new ApplyNode(val, args);
     }    
 
@@ -222,6 +237,13 @@ private:
     }
   }
 
+  // this function will only parse expressions with operators of higher precedence
+  // than last_op_id.
+  // meaning,
+  // A op1 B op2 C
+  //       ^ parse_increasing_precedence(A, op1)
+  // will only bind op2 to B if op2 has higher precedence than op1
+  // OR if op2 == op1 is right associative (in which case op2 indeed has higher precedence)
   SyntaxNode *parse_increasing_precedence(SyntaxNode* left, uint32_t last_op_id) { // 
     bool can_parse_postfix = false;
     bool can_parse_binary = false;

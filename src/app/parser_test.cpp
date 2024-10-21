@@ -165,15 +165,15 @@ const std::vector<test_case> test_cases = {
   // call tests
   {"f()", "(f)"},
   {"f(x)", "(f x)"},
-  {"f(x, y)", "(f (, x y))"},
-  {"f(x, y, z)", "(f (, x (, y z)))"},
+  {"f(x, y)", "(f x y)"},
+  {"f(x, y, z)", "(f x y z)"},
   
   // string tests
   {"\"string\"", "\"string\""}, // this works trivially because I haven't actually made a distinction between identifiers and strings yet... lol
 
   // printf test
   {"printf(\"hello, world\")", "(printf \"hello, world\")"},
-  {"printf(\"display some number: %d\\n\", 123);", "(; (printf (, \"display some number: %d\\n\" 123)))"},
+  {"printf(\"display some number: %d\\n\", 123);", "(; (printf \"display some number: %d\\n\" 123))"},
 
   // parse semicolon
   {"1 + 1;", "(; (+ 1 1))"},
@@ -183,11 +183,11 @@ const std::vector<test_case> test_cases = {
   {"{ printf(\"first printf\\n\"); printf(\"second printf\\n\")  }", "(block (; (printf \"first printf\\n\")) (printf \"second printf\\n\"))"},
   
   // function type signature test
-  {"f(x : int, y : int) -> int", "(-> (f (, (: x int) (: y int))) int)"},
+  {"f(x : int, y : int) -> int", "(-> (f (: x int) (: y int)) int)"},
 
   // function definition parse tests
   {"f(x) = { x; }", "(= (f x) (block (; x)))"}, // TODO (maybe): change parser to use something like "defun" instead of "apply" ?
-  {"f(x : int, y : int) -> int = { x + y }", "(= (-> (f (, (: x int) (: y int))) int) (block (+ x y)))"},
+  {"f(x : int, y : int) -> int = { x + y }", "(= (-> (f (: x int) (: y int)) int) (block (+ x y)))"},
 
   // let test
   {"let x = 1", "(let (= x 1))"},
@@ -207,7 +207,7 @@ const std::vector<test_case> test_cases = {
 
   // fn tests
   {"f(x) = { x; }", "(= (f x) (block (; x)))"},
-  {"f(x : int, y : int) -> int = { x + y }", "(= (-> (f (, (: x int) (: y int))) int) (block (+ x y)))"},
+  {"f(x : int, y : int) -> int = { x + y }", "(= (-> (f (: x int) (: y int)) int) (block (+ x y)))"},
   // I originally made the "fn" prefix in order to distinguish between the
   // "apply" token/operator and function application, but actually I still
   // have to use here, so that doesn't even matter...
@@ -215,7 +215,7 @@ const std::vector<test_case> test_cases = {
   {"f(x : int, y : int) -> int = { \n\
       a : int = x + y; \n\
       b : int = x * y; \n\
-      a + b }", "(= (-> (f (, (: x int) (: y int))) int) (block (; (= (: a int) (+ x y))) (; (= (: b int) (* x y))) (+ a b)))"},
+      a + b }", "(= (-> (f (: x int) (: y int)) int) (block (; (= (: a int) (+ x y))) (; (= (: b int) (* x y))) (+ a b)))"},
 
   // if-then(-else) tests
   {"if true then 1", "(then (if true) 1)"}, // this is absolutely insane
