@@ -125,6 +125,7 @@
 
 class SyntaxNode {
 public:
+  virtual inline std::string name() = 0;
   virtual std::string to_string() = 0;
 };
 
@@ -134,84 +135,85 @@ public:
   Token *token;
   ValueNode(Type type, Token *token) : type(type), token(token) {}
   ValueNode(Token* token) : token(token) {}
+  ValueNode(std::string literal) : token(new Token(literal)) {}
 
-  std::string to_string() {
-    return token->literal;
-  }
+  inline std::string name() override;
+  std::string to_string() override;
 };
 
-class IdentNode : public ValueNode {
-public:
-  IdentNode(Type type, Token *token) : ValueNode(type, token) {}
-  IdentNode(Token *token) : ValueNode(TypeSet::get_id("dynamic"), token) {}
-};
+// class IdentNode : public ValueNode {
+// public:
+//   IdentNode(Type type, Token *token) : ValueNode(type, token) {}
+//   IdentNode(Token *token) : ValueNode(TypeSet::get_id("dynamic"), token) {}
+// };
 
-class ArgListNode : public SyntaxNode {
-public:
-  std::vector<SyntaxNode *> args;
-  ArgListNode(std::vector<SyntaxNode *> args) : args(args) {}
+// class ArgListNode : public SyntaxNode {
+// public:
+//   std::vector<SyntaxNode *> args;
+//   ArgListNode(std::vector<SyntaxNode *> args) : args(args) {}
 
-  std::string to_string() override {
-    std::string s;
-    for (auto arg : args) {
-      s += arg->to_string() + " ";
-    }
-    if (s.size()) s.pop_back();
-    return s;
-  }
-};
+//   std::string to_string() override {
+//     std::string s;
+//     for (auto arg : args) {
+//       s += arg->to_string() + " ";
+//     }
+//     if (s.size()) s.pop_back();
+//     return s;
+//   }
+
+//   SyntaxNode *operator[](int i) {
+//     return args[i];
+//   }
+// };
 
 class ApplyNode : public SyntaxNode {
 public:
   SyntaxNode *fn;
-  ArgListNode *args;
-  ApplyNode(SyntaxNode *fn, ArgListNode *args) : fn(fn), args(args) {}
+  //ArgListNode *args;
+  //ApplyNode(SyntaxNode *fn, ArgListNode *args) : fn(fn), args(args) {}
+  std::vector<SyntaxNode *> args;
+  ApplyNode(SyntaxNode *fn, std::vector<SyntaxNode *> args) : fn(fn), args(args) {}
 
-  std::string to_string() override {
-    std::string s = "(" + fn->to_string();
-    if (args) s += " " + args->to_string();
-    s += ")";
-    return s;
-  }
+  inline std::string name() override;
+  std::string to_string() override;
+
+  SyntaxNode *operator[](int i);
 };
 
 class BlockNode : public SyntaxNode {
 public:
   std::vector<SyntaxNode *> children;
+
+  BlockNode() {}
   BlockNode(std::vector<SyntaxNode *> children) : children(children) {}
 
-  std::string to_string() override {
-    std::string s = "(block ";
-    for (auto child : children) {
-      s += child->to_string() + " ";
-    }
-    s.pop_back();
-    s += ")";
-    return s;
-  }
+  inline std::string name() override;
+  std::string to_string() override;
+
+  SyntaxNode *operator[](int i);
 };
 
 class LetNode : public SyntaxNode {
 public:
-  IdentNode *ident;
+  ValueNode *ident;
   ValueNode *value;
-  LetNode(IdentNode *ident, ValueNode *value) : ident(ident), value(value) {}
+  LetNode(ValueNode *ident, ValueNode *value) : ident(ident), value(value) {}
 
-  std::string to_string() override {
-    return "(let " + ident->to_string() + " " + value->to_string() + ")";
-  }
+  inline std::string name() override;
+  std::string to_string() override;
 };
 
+// TODO:
+// does this properly handle expression functions?
 class FnDefNode : public SyntaxNode {
 public:
-  IdentNode *ident;
+  ValueNode *ident;
   Type type = TypeSet::get_id("dynamic");
-  ArgListNode *args;
+  std::vector<SyntaxNode*> args;
   BlockNode *block;
-  FnDefNode(IdentNode *ident, ArgListNode *args, BlockNode *block) : ident(ident), args(args), block(block) {}
-  FnDefNode(IdentNode *ident, Type type, ArgListNode *args, BlockNode *block) : ident(ident), type(type), args(args), block(block) {}
+  FnDefNode(ValueNode *ident, std::vector<SyntaxNode*> args, BlockNode *block) : ident(ident), args(args), block(block) {}
+  FnDefNode(ValueNode *ident, Type type, std::vector<SyntaxNode*> args, BlockNode *block) : ident(ident), type(type), args(args), block(block) {}
 
-  std::string to_string() override {
-    return "(fn_def " + ident->to_string() + " " + args->to_string() + " " + block->to_string() + ")";
-  }
+  inline std::string name() override;
+  std::string to_string() override;
 };

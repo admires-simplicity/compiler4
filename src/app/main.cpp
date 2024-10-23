@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
   }
 
   if (flags & PARSE_TREE_ONLY) {
-    std::cout << parsed->to_string(flags & PRETTY_PARSE_TREE, flags & PARSE_TREE_TYPES, 1) << std::endl;
+    std::cout << parsed->to_string(/*flags & PRETTY_PARSE_TREE, flags & PARSE_TREE_TYPES, 1*/) << std::endl;
     return 0;
   }
 
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
   }
 
   if (flags & OUTPUT_IR) {
-    std::cout << compiled->to_string(true, true, 1) << std::endl;
+    std::cout << compiled->to_string(/*true, true, 1*/) << std::endl;
     return 0;
   }
 
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
   }
 
   // emit
-  emit(compiled);
+  //emit(compiled);
 
   return 0;
 }

@@ -1,20 +1,35 @@
-// #include <cassert>
-// #include <iostream>
-// #include <optional>
+#include <cassert>
+#include <iostream>
+#include <optional>
+#include <deque>
+#include <functional>
 
-// #include "compiler.h"
-// #include "scope.h"
-// #include "util.h"
+#include "compiler.h"
+#include "scope.h"
+#include "util.h"
 
-// bool is_fn_def(SyntaxNode *node) {
-//     if (node == nullptr) return false;
-//     if (node->token == nullptr) return false;
-//     if (node->token->literal == ";") node = node->children[0];
-//     if (node->type == SyntaxNode::NodeType::literal && node->token->literal == "=") node = node->children[0];
-//     else return false;
-//     if (node->token->literal == "->") return true;
-//     else return false;
-// }
+
+bool is_fn_def(SyntaxNode *node) {
+    std::deque<std::string> fn_def_sig = {";", "=", "->"};
+
+    std::function<bool(std::deque<std::string>&, SyntaxNode*)> is_apply_with_val_and_subexpr
+    = [&is_apply_with_val_and_subexpr](std::deque<std::string>& sig, SyntaxNode *node) {
+      if (sig.size() == 0) return true;
+      std::string next = sig.front();
+      sig.pop_front();
+
+      ApplyNode *apply = dynamic_cast<ApplyNode*>(node);
+      if (apply == nullptr) return false;
+      ValueNode *fn = dynamic_cast<ValueNode*>(apply->fn);
+      if (fn == nullptr) return false;
+      if (fn->token->literal != next) return false;
+      if (apply->args.size() == 0) return false;
+
+      return is_apply_with_val_and_subexpr(sig, apply->args[0]);
+    };
+
+    return is_apply_with_val_and_subexpr(fn_def_sig, node);
+}
 
 // SyntaxNode *to_returning_segment(SyntaxNode *node) {
 //     if (node->token->literal == "return") return node;
@@ -62,6 +77,10 @@
 
 //     return true;
 // }
+
+bool last_to_return(SyntaxNode *node) {
+  return false;
+}
 
 // SyntaxNode *comma_to_arg_list(SyntaxNode *node) {
 //     assert(node != nullptr && 1);
@@ -162,6 +181,20 @@
 //     // std::cout << "to_fn_def : " << node->to_string(false, true) << "\n";
 // }
 
+FnDefNode* to_FnDefNode(SyntaxNode*& node) {
+  ApplyNode* semicolon = dynamic_cast<ApplyNode*>(node);
+  ApplyNode* equals = dynamic_cast<ApplyNode*>(semicolon->args[0]);
+  ApplyNode* arrow = dynamic_cast<ApplyNode*>(equals->args[0]);
+  ApplyNode* signature = dynamic_cast<ApplyNode*>(arrow->args[0]);
+  ValueNode* name = dynamic_cast<ValueNode*>(signature->fn); // TODO: in general signature->fn might not be a literal ValueNode!
+  std::vector<SyntaxNode*> args = signature->args;
+  BlockNode* FnBlock = dynamic_cast<BlockNode*>(equals->args[1]);
+
+  FnDefNode *fn = new FnDefNode(name, args, FnBlock);
+
+  return fn;
+}
+
 // SyntaxNode *get_block_in_fn_defn(SyntaxNode *node) {
 //     if (node->token->literal == ";") node = node->children[0];
 //     node = node->children[1]; // (= (-> ...) <block>) -> <block>
@@ -256,58 +289,51 @@
 //     return !found_error;
 // }
 
+bool format_fn(FnDefNode* node) {
+  last_to_return(node);
+
+  return true;
+}
+
+  SyntaxNode *compile(SyntaxNode *node) {
+  BlockNode* program_statements = dynamic_cast<BlockNode*>(node);
+  if (program_statements == nullptr) {
+    std::cerr << "<Compiler> Error: expected BlockNode, got " << node->name() << "\n";
+    return nullptr;
+  }
+
+  BlockNode *program = new BlockNode();
+  std::vector<SyntaxNode *> function_decls;
+  
+  BlockNode* main_block = new BlockNode();
+  FnDefNode* main_fn = new FnDefNode(new ValueNode("main"), {}, main_block);
+
+  for (int i = 0; i < program_statements->children.size(); ++i) {
+    SyntaxNode* child = program_statements->children[i];
+    if (is_fn_def(child)) {
+      FnDefNode *fn = to_FnDefNode(child);
+      format_fn(fn);
+      program->children.push_back(fn);
+    }
+    else {
+      main_block->children.push_back(child);
+    }
+  }
+  format_fn(main_fn);
+
+  for (auto& function : function_decls) {
+    program->children.push_back(function);
+  }
+  program->children.push_back(main_fn);
 
 
-// // for now this is only compiling a whole source file.
-// // if we want to make an interpreter we'll need to rework this later.
-// SyntaxNode *compile(SyntaxNode *node) {
-//     // expect block
-//     if (node->type != SyntaxNode::NodeType::block) {
-//         std::cerr << "<Compiler> Error: expected block, got " << node->token->literal << "\n";
-//         return nullptr;
-//     }
+  // bool well_formed = semantic_analysis(program, global_scope);
+  // if (!well_formed) {
+  //     std::cerr << "<Compiler> Error: type error found -- aborting compilation\n";
+  //     // TODO: delete node
+  //     return nullptr;
+  // }
 
-//     //node->token = new Token(Token::Type::program_block);
-
-//     std::vector<SyntaxNode *> function_decls;
-    
-//     SyntaxNode *main_block = new SyntaxNode(SyntaxNode::NodeType::block);
-//     SyntaxNode *main_fn =
-//         new SyntaxNode(";", {
-//             new SyntaxNode("=", {
-//                 new SyntaxNode("->", {
-//                     new SyntaxNode(SyntaxNode::NodeType::apply, {new SyntaxNode("main")}),
-//                     new SyntaxNode("int")}),
-//                 main_block})});
-
-//     SyntaxNode *program = new SyntaxNode(SyntaxNode::NodeType::program_block);
-
-//     for (auto child : node->children) {
-//         if (is_fn_def(child)) {
-//             last_to_return(get_block_in_fn_defn(child)); // TODO: this only works assuming fn is actually a block
-//             to_fn_def(child);
-//             program->children.push_back(child);
-//         }
-//         // TODO: if is var, put it in global vars
-//         else {
-//             main_block->children.push_back(child);
-//         }
-//     }
-
-//     to_fn_def(main_fn); // TODO: this is broken for some reason
-
-//     program->children.push_back(main_fn);
-//     // TODO: Right now we just add every line in the top level to the main block
-//     //       but that's wrong because then global vars don't work. Fix that.
-//     //to_fn_def(main_fn);
-
-//     bool well_formed = semantic_analysis(program, global_scope);
-//     if (!well_formed) {
-//         std::cerr << "<Compiler> Error: type error found -- aborting compilation\n";
-//         // TODO: delete node
-//         return nullptr;
-//     }
-
-//     // TODO: delete node
-//     return program;   
-// }
+  // TODO: delete node
+  return program;   
+}

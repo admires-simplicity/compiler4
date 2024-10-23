@@ -151,7 +151,7 @@ private:
     return expr;
   }
 
-  ArgListNode *parse_arglist() {
+  std::vector<SyntaxNode*> parse_arglist() {
     Token *tkn = lexer.next().value();
     assert(tkn->literal == "(");
 
@@ -168,7 +168,7 @@ private:
     Token *nxt = lexer.next().value(); // advance / skip ")"
     assert(nxt->literal == ")");
 
-    return (args.size()) ? new ArgListNode(args) : nullptr;
+    return args;
   }
 
   // this function is a slight misnomer, since it handles parens and prefix ops
@@ -199,7 +199,7 @@ private:
       // prefix op
       if (is_prefix_op) {
         //val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal])});
-        val = new ApplyNode(new ValueNode(tkn), new ArgListNode({parse_expr(syntax_ids[tkn->literal])}));
+        val = new ApplyNode(new ValueNode(tkn), std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal])});
       }
       // literal
       else {
@@ -212,9 +212,10 @@ private:
     std::optional<Token*> nxt = lexer.peek();
     if (!nxt.has_value()) return val;
 
+    // TODO: allow for repeated ()?
     tkn = nxt.value();
     if (tkn->literal == "(") { // TODO: switch this to a Trie representation?
-      ArgListNode *args = parse_arglist();
+      std::vector<SyntaxNode*> args = parse_arglist();
       val = new ApplyNode(val, args);
     }    
 
@@ -273,10 +274,10 @@ private:
     if (bin_ops.contains(op->literal)) {
       SyntaxNode *right = parse_expr(syntax_ids[op->literal]); //(1)
       //return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
-      return new ApplyNode(new ValueNode(op), new ArgListNode({left, right}));
+      return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{left, right});
     } else {
       //return new SyntaxNode(op, std::vector<SyntaxNode*>{left});
-      return new ApplyNode(new ValueNode(op), new ArgListNode({left}));
+      return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{left});
     }
   }
   
