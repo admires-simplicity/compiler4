@@ -8,6 +8,8 @@
 #include "options.h"
 #include "bimap.h"
 
+class SyntaxNodeVisitor;
+
 // class SyntaxNode {
 // public:
 //   enum class NodeType {
@@ -123,8 +125,11 @@
 
 // };
 
+
+
 class SyntaxNode {
 public:
+  virtual void accept(SyntaxNodeVisitor &v) = 0;
   virtual inline std::string name() = 0;
   virtual std::string to_string() = 0;
 };
@@ -137,6 +142,7 @@ public:
   ValueNode(Token* token) : token(token) {}
   ValueNode(std::string literal) : token(new Token(literal)) {}
 
+  void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
   std::string to_string() override;
 };
@@ -174,6 +180,7 @@ public:
   std::vector<SyntaxNode *> args;
   ApplyNode(SyntaxNode *fn, std::vector<SyntaxNode *> args) : fn(fn), args(args) {}
 
+  void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
   std::string to_string() override;
 
@@ -187,6 +194,7 @@ public:
   BlockNode() {}
   BlockNode(std::vector<SyntaxNode *> children) : children(children) {}
 
+  void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
   std::string to_string() override;
 
@@ -199,6 +207,7 @@ public:
   ValueNode *value;
   LetNode(ValueNode *ident, ValueNode *value) : ident(ident), value(value) {}
 
+  void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
   std::string to_string() override;
 };
@@ -208,12 +217,23 @@ public:
 class FnDefNode : public SyntaxNode {
 public:
   ValueNode *ident;
-  Type type = TypeSet::get_id("dynamic");
+  //Type type = TypeSet::get_id("dynamic");
   std::vector<SyntaxNode*> args;
   BlockNode *block;
   FnDefNode(ValueNode *ident, std::vector<SyntaxNode*> args, BlockNode *block) : ident(ident), args(args), block(block) {}
-  FnDefNode(ValueNode *ident, Type type, std::vector<SyntaxNode*> args, BlockNode *block) : ident(ident), type(type), args(args), block(block) {}
+  //FnDefNode(ValueNode *ident, Type type, std::vector<SyntaxNode*> args, BlockNode *block) : ident(ident), type(type), args(args), block(block) {}
 
+  void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
   std::string to_string() override;
+};
+
+class SyntaxNodeVisitor {
+public:
+  virtual void visit(ValueNode *node) = 0;
+  virtual void visit(ApplyNode *node) = 0;
+  virtual void visit(BlockNode *node) = 0;
+  virtual void visit(LetNode *node) = 0;
+  virtual void visit(FnDefNode *node) = 0;
+  virtual ~SyntaxNodeVisitor() = default;
 };

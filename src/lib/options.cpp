@@ -20,11 +20,16 @@ const int VERBOSE = 128;
 
 bool type_display_names = true;
 
+// Syntax Tree printing flags
+bool display_types = false;
+bool pretty_print = false;
+int pretty_print_max_depth = 1;
+
 uint64_t flags;
 
 int64_t read_flags(int argc, char** argv) {
   int64_t flags = 0;
-  for (int i = 1; i < argc; i++) {
+  for (int i = 1; i < argc; ++i) {
     std::string arg = std::string(argv[i]);
     if (arg.size() >= 1 && arg[0] == '-') {
       if (arg.size() >= 2) {
@@ -39,8 +44,16 @@ int64_t read_flags(int argc, char** argv) {
             if (arg.size() >= 3 && arg[2] == 't') flags |= PARSE_TREE_TYPES;
             break;
           case 'i':
-            // todo: change this to work like -p (can select show types or not)
             flags |= OUTPUT_IR;
+            for (int j = 2; j < arg.size(); ++j) {
+              if (std::tolower(arg[j]) == 't') display_types = true;
+              if (std::tolower(arg[j]) == 'p') {
+                pretty_print = true;
+                if (j+1 < arg.size() && std::isdigit(arg[j+1])) {
+                  pretty_print_max_depth = std::stoi(arg.substr(j+1));
+                }
+              }
+            }
             break;
           case 'v':
             flags |= VERBOSE;

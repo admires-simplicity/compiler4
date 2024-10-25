@@ -1,6 +1,8 @@
 #include <string>
+#include <vector>
 #include <fstream>
 #include <sstream>
+#include <utility>
 
 #include "util.h"
 
@@ -31,3 +33,4 @@ bool is_num(std::string s) {
     }
     return true;
 }
+
