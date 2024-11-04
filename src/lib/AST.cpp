@@ -21,6 +21,10 @@ void BlockNode::accept(SyntaxNodeVisitor &v) {
   v.visit(this);
 }
 
+void ProgramBlockNode::accept(SyntaxNodeVisitor &v) {
+  v.visit(this);
+}
+
 void LetNode::accept(SyntaxNodeVisitor &v) {
   v.visit(this);
 }
@@ -106,7 +110,9 @@ std::string LetNode::to_string() {
 }
 
 std::string FnDefNode::to_string() {
-  return "(" + this->name() + to_string_internal({ident, block}) + ")";
+  return "(" + this->name() +
+  to_string_internal(add_vec<SyntaxNode*>(std::vector<SyntaxNode*>{ident}, add_vec<SyntaxNode*>(this->args, std::vector<SyntaxNode*>{block})))
+  + ")";
 }
 
 SyntaxNode *ApplyNode::operator[](int i) {
@@ -140,6 +146,10 @@ public:
       d = std::max(d, depth(child));
     }
     res = d + 1;
+  }
+
+  void visit(ProgramBlockNode *node) override {
+    visit(static_cast<BlockNode*>(node));
   }
 
   void visit(LetNode *node) override {

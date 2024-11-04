@@ -63,37 +63,37 @@ bool is_fn_def(SyntaxNode *node) {
 //     bool make_stmt = false;
 //     SyntaxNode **dest = &node->children[node->children.size()-1];
 //     SyntaxNode *last_stmt = *dest; //node->children[node->children.size()-1];
-
+//
 //     // TODO: this only works if last_stmt is actually an expression statement (in C)
 //     // e.g. this won't work for blocks or various other AST types like var defns
-
+//
 //     if (last_stmt->token->literal != ";") {
 //         *dest = new SyntaxNode(";", {last_stmt});
 //         last_stmt = *dest;
 //     }
-
+//
 //     //last_stmt->children = { new SyntaxNode("return", last_stmt->children) }; // TODO: is this overkill? Shouldn't we only ever need last_stmt->child[0] ?
 //     *dest = to_returning_segment(last_stmt);
-
+//
 //     return true;
 // }
 
 bool last_to_return(SyntaxNode *node) {
-  return false;
+  return false; // call to_returning_segment here
 }
 
 // SyntaxNode *comma_to_arg_list(SyntaxNode *node) {
 //     assert(node != nullptr && 1);
 //     //std::cout << "comma_to_arg_list : " << node->to_string() << "\n";
-
+//
 //     assert(node->type == SyntaxNode::NodeType::literal && node->token->literal == ",");
 //     SyntaxNode *rest = node->children[1];
 //     Type ret_type = TypeIdList{"int"}; // TODO: this is a placeholder 
-
+//
 //     assert(rest != nullptr && 2);
-
+//
 //     node->children.erase(node->children.begin() + 1);  
-
+//
 //     while (rest != nullptr && rest->type == SyntaxNode::NodeType::literal && rest->token->literal == ",") {
 //         //std::cout << rest->children[0]->to_string() << "\n";
 //         node->children.push_back(rest->children[0]);
@@ -101,9 +101,9 @@ bool last_to_return(SyntaxNode *node) {
 //     }
 //     assert(rest != nullptr && 3);
 //     node->children.push_back(rest);
-
+//
 //     //std::cout << "comma_to_arg_list : " << node->to_string() << "\n";
-
+//
 //     return node;
 // }
 // /* where
@@ -113,10 +113,9 @@ bool last_to_return(SyntaxNode *node) {
 //     SyntaxNode("arg_list", {SyntaxNode("a"), SyntaxNode("b"), SyntaxNode("c", SyntaxNode("d"))});
 // */
 
-// // TODO: this function is a mess. clean it up.
 // void to_fn_def(SyntaxNode *node) {
 //     //std::cout << "to_fn_def : " << node->to_string() << "\n";
-
+//
 //     // we shouldn't have to do is_fn_def because we only call this function immediately
 //     // after checking is_fn_def
 //     assert(node->type == SyntaxNode::NodeType::literal && node->token->literal == ";");
@@ -125,7 +124,7 @@ bool last_to_return(SyntaxNode *node) {
 //     // no semicolon... maybe we should just make that illegal at the program_block level?
 //     node = node->children[0];
 //     assert(node->type == SyntaxNode::NodeType::literal && node->token->literal == "=");
-
+//
 //     node->type = SyntaxNode::NodeType::fn_def; 
 //     SyntaxNode *sig = node->children[0];
 //     assert(sig->type == SyntaxNode::NodeType::literal && sig->token->literal == "->");
@@ -133,10 +132,10 @@ bool last_to_return(SyntaxNode *node) {
 //     SyntaxNode *name = sig->children[0]->children[0];
 //     SyntaxNode *ret_type = sig->children[1];
 //     //std::cout << "ret type is " << ret_type->to_string() << "\n";
-
+//
 //     TypeVarVec fn_type;
 //     SyntaxNode *arg_list;
-
+//
 //     if (sig->children[0]->children.size() > 1) {
 //         arg_list = sig->children[0]->children[1];
 //         if (arg_list->type == SyntaxNode::NodeType::literal && arg_list->token->literal == ",") {
@@ -144,9 +143,9 @@ bool last_to_return(SyntaxNode *node) {
 //         } else {
 //             arg_list = new SyntaxNode(",", {arg_list}); // TODO: too hacky... make better
 //         }
-
+//
 //         //arg_list->children.push_back(ret_type);
-
+//
 //         // TODO: this is wrong because it only handles atomic types and not compound/function types
 //         for (auto arg : arg_list->children) {
 //             if (arg->type == SyntaxNode::NodeType::literal && arg->token->literal == ":") {
@@ -160,24 +159,24 @@ bool last_to_return(SyntaxNode *node) {
 //     } else {
 //         arg_list = new SyntaxNode(",", {}); // todo: awful
 //     }
-
+//
 //     fn_type.push_back(ret_type->token->literal);
 //     //node->type = SyntaxNode::NodeType::literal;
 //     node->val_type = fn_type;
 //     // TODO: I should actually be chaing these into type nodes before inserting them as "types"
-
+//
 //     SyntaxNode *body = node->children[1];
-
+//
 //     node->children[0] = arg_list; // TODO: this is incorrect because we're leaking node->children[0]
 //     // TODO: maybe change node->children[0] type to some explicit arg_list type
-
+//
 //     node->children.insert(node->children.begin(), name);
-
+//
 //     // TODO: we should actually be checking arg types before we set the type of the function,
 //     //       that way we can just do arg->val_type instead of arg->token->literal
-
+//
 //     //std::cout << "node->val_type : " << type_to_string(node->val_type) << "\n";
-
+//
 //     // std::cout << "to_fn_def : " << node->to_string(false, true) << "\n";
 // }
 
@@ -203,13 +202,13 @@ FnDefNode* to_FnDefNode(SyntaxNode*& node) {
 
 // bool semantic_analysis(SyntaxNode *node, Scope& scope) {
 //     bool found_error = false;
-
+//
 //     //std::cout << SyntaxNode::NodeType_repr[node->type] << (node->token ? " " + node->token->literal : "") << "\n";
-
+//
 //     for (auto child : node->children) {
 //         semantic_analysis(child, scope);
 //     }
-
+//
 //     switch (node->type) {
 //         case SyntaxNode::NodeType::literal:
 //             if (node->children.size() == 0) {
@@ -282,10 +281,10 @@ FnDefNode* to_FnDefNode(SyntaxNode*& node) {
 //                 }
 //             }
 //             break;
-        
-
+//
+//
 //     }
-
+//
 //     return !found_error;
 // }
 
@@ -302,7 +301,7 @@ bool format_fn(FnDefNode* node) {
     return nullptr;
   }
 
-  BlockNode *program = new BlockNode();
+  ProgramBlockNode *program = new ProgramBlockNode();
   std::vector<SyntaxNode *> function_decls;
   
   BlockNode* main_block = new BlockNode();

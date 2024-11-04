@@ -8,6 +8,14 @@
 #include "options.h"
 #include "bimap.h"
 
+class SyntaxNode;
+class ValueNode;
+class ApplyNode;
+class BlockNode;
+class ProgramBlockNode;
+class LetNode;
+class FnDefNode;
+
 class SyntaxNodeVisitor;
 
 class SyntaxNode {
@@ -57,6 +65,11 @@ public:
   SyntaxNode *operator[](int i);
 };
 
+class ProgramBlockNode : public BlockNode {
+public:
+  void accept(SyntaxNodeVisitor &v) override;
+};
+
 class LetNode : public SyntaxNode {
 public:
   ValueNode *ident;
@@ -87,6 +100,7 @@ public:
   virtual void visit(ValueNode *node) = 0;
   virtual void visit(ApplyNode *node) = 0;
   virtual void visit(BlockNode *node) = 0;
+  virtual void visit(ProgramBlockNode *node) = 0;
   virtual void visit(LetNode *node) = 0;
   virtual void visit(FnDefNode *node) = 0;
   virtual ~SyntaxNodeVisitor() = default;

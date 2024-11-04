@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
   }
 
   // emit
-  //emit(compiled);
+  emit_program(compiled);
 
   return 0;
 }
