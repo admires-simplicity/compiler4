@@ -14,6 +14,8 @@ std::set<std::string> c_infix_ops = {
   "=",
 };
 
+
+
 // the point of this function is to output C headers (and maybe globals?)
 // before passing the program to emit(SyntaxNode*).
 bool emit_program(SyntaxNode* program) {
@@ -25,12 +27,16 @@ bool emit_program(SyntaxNode* program) {
 class EmitVisitor : public SyntaxNodeVisitor {
   bool res = true;
   std::stringstream output;
+  bool output_type = false;
 public:
   bool get_result() { return res; }
 
   std::string get_output() { return output.str(); }
 
   void visit(ValueNode* node) override {
+    if (output_type) {
+
+    }
     output << node->token->literal;
   }
 
@@ -66,14 +72,17 @@ public:
   }
 
   void visit(FnDefNode* node) override {
+    bool last_ot = output_type;
+    output_type = true; // set flag to output types in visit(ValueNode*)
     node->ident->accept(*this);
     output << "(";
     for (int i = 0; i < node->args.size(); ++i) {
       node->args[i]->accept(*this);
       output << ", ";
     }
-    output.seekp(-2, std::ios_base::end); // delete last ", "
-    std::cout << ") ";
+    output_type = last_ot; // reset flag
+    if (node->args.size()) output.seekp(-2, std::ios_base::end); // delete last ", "
+    output << ") ";
     node->block->accept(*this);
   }
 };
