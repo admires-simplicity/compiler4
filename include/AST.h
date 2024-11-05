@@ -27,9 +27,9 @@ public:
 
 class ValueNode : public SyntaxNode {
 public:
-  Type type = TypeSet::get_id("unassigned type");
+  Type *type = new AtomicType(TypeSet::get_id("unassigned type"));
   Token *token;
-  ValueNode(Type type, Token *token) : type(type), token(token) {}
+  ValueNode(Type *type, Token *token) : type(type), token(token) {}
   ValueNode(Token* token) : token(token) {}
   ValueNode(std::string literal) : token(new Token(literal)) {}
 

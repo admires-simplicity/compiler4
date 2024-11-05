@@ -91,7 +91,7 @@ std::string to_string_internal(std::vector<SyntaxNode*> nodes, bool _first_no_se
 
 std::string ValueNode::to_string() {
   return (display_types)
-    ? type_to_string(type) + ":" + token->literal
+    ? type->to_string() + ":" + token->literal
     : token->literal;
 }
 

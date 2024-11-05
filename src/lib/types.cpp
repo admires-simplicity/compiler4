@@ -36,17 +36,6 @@ constexpr std::array<std::string, 2> syntax_types = {
   "identifier",
 };
 
-std::string type_to_string(Type type, bool _typename) {
-  if (std::holds_alternative<int>(type)) {
-    int id = std::get<int>(type);
-    if (_typename) return TypeSet::get_type_name(id);
-    else return std::to_string(id);
-  }
-  else {
-    return std::get<TypeIdList>(type).to_string();
-  }
-}
-
 template<typename K, typename V, std::size_t N>
 void add_arr_to_map(
     std::map<K, V>& m,
@@ -84,16 +73,6 @@ std::map<std::string, int>& TypeSet::get_type_to_id() {
   return type_to_id;
 }
 
-std::string type_to_id(Type type, bool _typenames=true) {
-  if (std::holds_alternative<int>(type)) {
-    if (_typenames) return TypeSet::get_type_name(std::get<int>(type));
-    else return std::to_string(std::get<int>(type));
-  }
-  else {
-    return std::get<TypeIdList>(type).to_string();
-  }
-}
-
 // TODO: this is wrong because we should break it up into internal_type and user_type
 bool TypeSet::is_type(std::string type) {
   return get_type_to_id().contains(type);
@@ -120,47 +99,8 @@ std::string typeid_print_repr(int id) {
   else return std::to_string(id);
 }
 
-std::string TypeIdList::to_string() {
-  std::string s = "[";
-  for (auto& t : types) {
-    if (std::holds_alternative<int>(t)) {
-      s += typeid_print_repr(std::get<int>(t));
-    } else {
-      s += std::get<TypeIdList*>(t)->to_string();
-    }
-    if (&t != &types.back()) s += ", ";
-  }    s += "]";
-  return s;
-}
-
-std::string type_print_repr(Type type) {
-  if (std::holds_alternative<int>(type)) {
-    return typeid_print_repr(std::get<int>(type));
-  }
-  else return std::get<TypeIdList>(type).to_string();
-}
-
 int infer_literal_type_id(std::string s) {
     if (is_int(s)) return TypeSet::get_id("int");
     else if (is_num(s)) return TypeSet::get_id("float");
     else return TypeSet::get_id("unassigned type");
-}
-
-// TODO: expand this to work for type strings of compound (function) types
-// should maybe be changed to interpret_type(SyntaxNode* node) ?
-std::optional<Type> TypeSet::interpret_type(std::string type) {
-  if (is_type(type)) return TypeSet::get_id(type);
-  else return std::nullopt;
-}
-
-bool TypeIdList::operator==(const TypeIdList& other) const {
-  // if (types.size() != other.types.size()) return false;
-  // for (int i = 0; i < types.size(); i++) {
-  //   if (types[i] != other.types[i]) return false;
-  // }
-  return true;
-}
-
-bool TypeIdList::operator!=(const TypeIdList& other) const {
-  return !(*this == other);
 }

@@ -17,7 +17,16 @@
 #include "options.h"
 
 int main(int argc, char** argv) { 
-  Type t = TypeIdList{"int", "int", "int"};
+  // TypeIdList t = TypeIdList{"int", "int", "int"};
+  //Type t = CompositeType(std::variant<int, std::string, Type>("int", "int", "int"));
+  Type *t1 = new AtomicType("int");
+  Type *t2 = new CompositeType{t1};
+  Type *t3 = new CompositeType{std::variant<int, std::string, Type*>("int")};
+  Type *t4a = new CompositeType{"int", 1, new AtomicType("int")};
+  Type *t4b = new CompositeType{{"int", 1, new AtomicType("int")}};
+  Type *t5 = new CompositeType{"int", "int", "int"};
+  CompositeType t6 = CompositeType{"int", "int", "int"};
+
 
   flags = read_flags(argc, argv);
 

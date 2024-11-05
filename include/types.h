@@ -7,13 +7,7 @@
 #include <initializer_list>
 #include <optional>
 
-class TypeIdList;
-using Type = std::variant<int, TypeIdList>;
-
-extern const std::array<std::string, 13> basic_types;
-
 class TypeSet {
-public:
   static std::map<int, std::string>& get_id_to_type();
   static std::map<std::string, int>& get_type_to_id();
 public:
@@ -21,49 +15,46 @@ public:
   static bool add_type(std::string type);
   static int get_id(std::string type);
   static std::string get_type_name(int id);
-  static std::optional<Type> interpret_type(std::string type);
 };
 
-using TypeVarVec = std::vector<std::variant<int, std::string, TypeIdList*>>;
+class Type {
+public:
+  virtual std::string to_string() = 0;
+};
 
-std::string type_to_string(Type type, bool _typename=true); // TODO: just make Type into a class so this can be a method
+class AtomicType : public Type {
+  int type_id;
+public:
+  AtomicType(int type_id) : type_id(type_id) {}
+  AtomicType(std::string type) : type_id(TypeSet::get_id(type)) {}
 
-class TypeIdList {
-private:
-  using TypeIdVec = std::vector<std::variant<int, TypeIdList*>>;
-  template<typename T>
-  void make_types(T types) { // TODO: put this in a cpp file. should I add type id type checking here?
+  std::string to_string() {
+    return TypeSet::get_type_name(type_id);
+  }
+};
+
+class CompositeType : public Type {
+  std::vector<Type*> types;
+public:
+  CompositeType(std::initializer_list<Type*> types) : types(types) {}
+  CompositeType(std::initializer_list<std::variant<int, std::string, Type*>> types) {
     for (auto& t : types) {
       if (std::holds_alternative<int>(t)) {
-        this->types.push_back(std::get<int>(t));
+        this->types.push_back(new AtomicType(std::get<int>(t)));
       } else if (std::holds_alternative<std::string>(t)) {
-        this->types.push_back(TypeSet::get_id(std::get<std::string>(t)));
+        this->types.push_back(new AtomicType(std::get<std::string>(t)));
       } else {
-        this->types.push_back(std::get<TypeIdList*>(t));
+        this->types.push_back(std::get<Type*>(t));
       }
-    }  
-  }
-public:
-  TypeIdVec types;
-  TypeIdList(std::initializer_list<std::variant<int, std::string, TypeIdList*>> types) {
-    make_types(types);  
-  }
-  TypeIdList(std::vector<std::variant<int, std::string, TypeIdList*>> types) {
-    make_types(types);
-  }
-  std::string to_string();
-
-  int size() { return types.size(); }
-
-  std::variant<int, TypeIdList*> operator[](int i) {
-    return types[i];
+    }
   }
 
-  bool operator==(const TypeIdList& other) const;
-
-  bool operator!=(const TypeIdList& other) const;
+  std::string to_string() {
+    return "CompositeType (TODO)";
+  }
 };
 
-std::string type_print_repr(Type type);
+
+extern const std::array<std::string, 13> basic_types;
 
 int infer_literal_type_id(std::string s); // infer literal value type id
