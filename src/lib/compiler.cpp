@@ -339,6 +339,7 @@ bool format_fn(FnDefNode* node) {
   
   BlockNode* main_block = new BlockNode();
   FnDefNode* main_fn = new FnDefNode(new ValueNode("main"), {}, main_block);
+  main_fn->ident->type = new CompositeType({new AtomicType("int")}); // (int) function type // TODO: we'll have to change this later if we decide to support command line arguments
 
   for (int i = 0; i < program_statements->children.size(); ++i) {
     SyntaxNode* child = program_statements->children[i];
