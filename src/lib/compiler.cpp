@@ -180,16 +180,49 @@ bool last_to_return(SyntaxNode *node) {
 //     // std::cout << "to_fn_def : " << node->to_string(false, true) << "\n";
 // }
 
+Type *infer_fn_type(SyntaxNode* node) {
+  // we expect infer_fn_type is passed an equals node like
+  // (=
+  //   (->
+  //     (f (: <arg1_name> <arg1_type>) ...)
+  //     <rtype>)
+  //   <function_block>)
+  ApplyNode* equals = dynamic_cast<ApplyNode*>(node);
+  ApplyNode* arrow = dynamic_cast<ApplyNode*>(equals->args[0]);
+  ApplyNode* signature = dynamic_cast<ApplyNode*>(arrow->args[0]);
+  ValueNode* ret_type = dynamic_cast<ValueNode*>(arrow->args[1]);
+  BlockNode* body = dynamic_cast<BlockNode*>(equals->args[1]);
+
+  std::vector<Type*> types;
+  for (SyntaxNode* arg : signature->args) {
+    ApplyNode* arg_apply = dynamic_cast<ApplyNode*>(arg);
+    ValueNode* arg_name = dynamic_cast<ValueNode*>(arg_apply->args[0]);
+    ValueNode* arg_type = dynamic_cast<ValueNode*>(arg_apply->args[1]);
+    types.push_back(new AtomicType(arg_type->token->literal));
+  }
+  types.push_back(new AtomicType(ret_type->token->literal));
+
+
+
+  return new CompositeType(types);
+}
+
 FnDefNode* to_FnDefNode(SyntaxNode*& node) {
   ApplyNode* semicolon = dynamic_cast<ApplyNode*>(node);
   ApplyNode* equals = dynamic_cast<ApplyNode*>(semicolon->args[0]);
   ApplyNode* arrow = dynamic_cast<ApplyNode*>(equals->args[0]);
   ApplyNode* signature = dynamic_cast<ApplyNode*>(arrow->args[0]);
+  
   ValueNode* name = dynamic_cast<ValueNode*>(signature->fn); // TODO: in general signature->fn might not be a literal ValueNode!
   std::vector<SyntaxNode*> args = signature->args;
   BlockNode* FnBlock = dynamic_cast<BlockNode*>(equals->args[1]);
 
   FnDefNode *fn = new FnDefNode(name, args, FnBlock);
+  fn->ident->type = infer_fn_type(equals);
+
+
+  //TODO: we're gonna have to modify this once we can support function types
+  //  so we can emit the return type properly
 
   return fn;
 }

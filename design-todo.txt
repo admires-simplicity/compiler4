@@ -1,3 +1,14 @@
+todo:
+properly deduce function type in to_fndef (if type is explicitly given)
+implement last_to_return
+implement if-then-else emitting
+add typing to everything
+implement let
+implement scoping
+ - add variables in lets to scope
+ - add function argument variables to scope
+
+
 TODO: fix makefile -- seems to recompile a lot of things that shouldn't need to be recompiled
 TODO: also make release and debug separate targets
 

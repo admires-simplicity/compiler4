@@ -6,6 +6,7 @@
 #include <variant>
 #include <initializer_list>
 #include <optional>
+#include <sstream>
 
 class TypeSet {
   static std::map<int, std::string>& get_id_to_type();
@@ -19,7 +20,7 @@ public:
 
 class Type {
 public:
-  virtual std::string to_string() = 0;
+  virtual std::string to_string() const = 0;
 };
 
 class AtomicType : public Type {
@@ -28,7 +29,7 @@ public:
   AtomicType(int type_id) : type_id(type_id) {}
   AtomicType(std::string type) : type_id(TypeSet::get_id(type)) {}
 
-  std::string to_string() {
+  std::string to_string() const {
     return TypeSet::get_type_name(type_id);
   }
 };
@@ -36,6 +37,7 @@ public:
 class CompositeType : public Type {
   std::vector<Type*> types;
 public:
+  CompositeType(std::vector<Type*> types) : types(types) {}
   CompositeType(std::initializer_list<Type*> types) : types(types) {}
   CompositeType(std::initializer_list<std::variant<int, std::string, Type*>> types) {
     for (auto& t : types) {
@@ -49,8 +51,19 @@ public:
     }
   }
 
-  std::string to_string() {
-    return "CompositeType (TODO)";
+  std::string to_string() const {
+    std::stringstream ss;
+    ss << "(";
+    for (int i = 0; i < types.size(); ++i) {
+      ss << types[i]->to_string() << " -> ";
+    }
+    ss.seekp(-4, std::ios_base::end);
+    ss << ")";
+    return ss.str().substr(0, ss.tellp());
+  }
+
+  const Type *return_type() {
+    return types.back();
   }
 };
 

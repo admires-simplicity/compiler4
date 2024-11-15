@@ -9,4 +9,4 @@
 bool emit(SyntaxNode *node);
 bool emit_program(SyntaxNode *node);
 
-extern std::set<std::string> c_infix_ops;
+//extern std::set<std::string> c_infix_ops;

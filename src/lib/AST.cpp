@@ -77,10 +77,12 @@ std::string to_string_internal(std::vector<SyntaxNode*> nodes, bool _first_no_se
   std::string s;
 
   auto it = nodes.begin();
-  if (_first_no_sep) {
+  if (_first_no_sep) { // used only for ValueNodes, so that we can display the funciton
+  // name in ApplyNodes
     s += (*it)->to_string();
     ++it;
   }
+
   for (; it != nodes.end(); ++it) {
     s += sep + (*it)->to_string();
   }
