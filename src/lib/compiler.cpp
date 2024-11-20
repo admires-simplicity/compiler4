@@ -78,8 +78,52 @@ bool is_fn_def(SyntaxNode *node) {
 //     return true;
 // }
 
-bool last_to_return(SyntaxNode *node) {
-  return false; // call to_returning_segment here
+// bool last_to_return(SyntaxNode *node) {
+//   return false; // call to_returning_segment here
+// }
+
+// class ReturningSegmentVisitor : public SyntaxNodeVisitor {
+//   bool res = true;
+// public:
+//   bool get_result() { return res; }
+
+//   void visit(ValueNode *node) override {
+//     assert(false); // nonsensical, should never be called. just needed for completeness to satisfy visitor interface.
+//   }
+
+//   void visit(ApplyNode *node) override {
+//     ValueNode *fn = dynamic_cast<ValueNode*>(node->fn);
+//     if (fn == nullptr) {
+//       res = false;
+//       return;
+//     }
+//     if (fn->token->)
+
+//   }
+
+//   void visit(BlockNode *node) override {
+//   }
+
+//   void visit(ProgramBlockNode *node) override {
+//   }
+
+//   void visit(LetNode *node) override {
+//   }
+
+//   void visit(FnDefNode *node) override {
+//   }
+// };
+
+bool last_to_stmt(SyntaxNode* ) {
+  return false;
+}
+
+bool to_returning_segment(SyntaxNode* &node) {
+  // I can't use a visitor because I need to reassign node in a few cases
+  if (ValueNode *vn = dynamic_cast<ValueNode*>(node)) {
+
+  }
+  return false;
 }
 
 // SyntaxNode *comma_to_arg_list(SyntaxNode *node) {
@@ -322,7 +366,8 @@ FnDefNode* to_FnDefNode(SyntaxNode*& node) {
 // }
 
 bool format_fn(FnDefNode* node) {
-  last_to_return(node);
+  //last_to_stmt(node->block);
+  //to_returning_segment(node->block);
 
   return true;
 }

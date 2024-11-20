@@ -1,0 +1,12 @@
+// example: function with explicit return
+f(x : int) -> int = {
+  return x * 2;
+};
+
+printf("%d\n", f(6));
+printf("%d\n", f(8));
+
+/*expect:
+12
+16
+*/
