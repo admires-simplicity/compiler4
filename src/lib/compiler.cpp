@@ -10,25 +10,15 @@
 
 
 bool is_fn_def(SyntaxNode *node) {
-    std::deque<std::string> fn_def_sig = {";", "=", "->"};
-
-    std::function<bool(std::deque<std::string>&, SyntaxNode*)> is_apply_with_val_and_subexpr
-    = [&is_apply_with_val_and_subexpr](std::deque<std::string>& sig, SyntaxNode *node) {
-      if (sig.size() == 0) return true;
-      std::string next = sig.front();
-      sig.pop_front();
-
-      ApplyNode *apply = dynamic_cast<ApplyNode*>(node);
-      if (apply == nullptr) return false;
-      ValueNode *fn = dynamic_cast<ValueNode*>(apply->fn);
-      if (fn == nullptr) return false;
-      if (fn->token->literal != next) return false;
-      if (apply->args.size() == 0) return false;
-
-      return is_apply_with_val_and_subexpr(sig, apply->args[0]);
-    };
-
-    return is_apply_with_val_and_subexpr(fn_def_sig, node);
+  StmtNode* stmt = dynamic_cast<StmtNode*>(node);
+  if (stmt == nullptr) return false;
+  ApplyNode* equals = dynamic_cast<ApplyNode*>(stmt->expr);
+  if (equals == nullptr) return false;
+  if (equals->fn->to_string() != "=") return false; // TODO: I'm not sure I like this
+  ApplyNode* arrow = dynamic_cast<ApplyNode*>(equals->args[0]);
+  if (arrow == nullptr) return false;
+  if (arrow->fn->to_string() != "->") return false;
+  return true;
 }
 
 // SyntaxNode *to_returning_segment(SyntaxNode *node) {
@@ -251,9 +241,8 @@ Type *infer_fn_type(SyntaxNode* node) {
   return new CompositeType(types);
 }
 
-FnDefNode* to_FnDefNode(SyntaxNode*& node) {
-  ApplyNode* semicolon = dynamic_cast<ApplyNode*>(node);
-  ApplyNode* equals = dynamic_cast<ApplyNode*>(semicolon->args[0]);
+FnDefNode* to_FnDefNode(StmtNode* node) {
+  ApplyNode* equals = dynamic_cast<ApplyNode*>(node->expr);
   ApplyNode* arrow = dynamic_cast<ApplyNode*>(equals->args[0]);
   ApplyNode* signature = dynamic_cast<ApplyNode*>(arrow->args[0]);
   
@@ -263,7 +252,6 @@ FnDefNode* to_FnDefNode(SyntaxNode*& node) {
 
   FnDefNode *fn = new FnDefNode(name, args, FnBlock);
   fn->ident->type = infer_fn_type(equals);
-
 
   //TODO: we're gonna have to modify this once we can support function types
   //  so we can emit the return type properly
@@ -372,7 +360,7 @@ bool format_fn(FnDefNode* node) {
   return true;
 }
 
-  SyntaxNode *compile(SyntaxNode *node) {
+SyntaxNode *compile(SyntaxNode *node) {
   BlockNode* program_statements = dynamic_cast<BlockNode*>(node);
   if (program_statements == nullptr) {
     std::cerr << "<Compiler> Error: expected BlockNode, got " << node->name() << "\n";
@@ -380,14 +368,14 @@ bool format_fn(FnDefNode* node) {
   }
 
   ProgramBlockNode *program = new ProgramBlockNode();
-  std::vector<SyntaxNode *> function_decls;
+  std::vector<FnDefNode *> function_decls;
   
   BlockNode* main_block = new BlockNode();
   FnDefNode* main_fn = new FnDefNode(new ValueNode("main"), {}, main_block);
   main_fn->ident->type = new CompositeType({new AtomicType("int")}); // (int) function type // TODO: we'll have to change this later if we decide to support command line arguments
 
   for (int i = 0; i < program_statements->children.size(); ++i) {
-    SyntaxNode* child = program_statements->children[i];
+    StmtNode* child = program_statements->children[i];
     if (is_fn_def(child)) {
       FnDefNode *fn = to_FnDefNode(child);
       format_fn(fn);

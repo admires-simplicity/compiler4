@@ -32,6 +32,11 @@ public:
 
   std::string get_output() { return output.str(); }
 
+  void visit(StmtNode* node) override {
+    node->expr->accept(*this);
+    output << ";\n";
+  }
+
   void visit(ValueNode* node) override {
     output << node->token->literal;
   }

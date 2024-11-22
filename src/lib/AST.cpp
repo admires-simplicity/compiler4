@@ -9,6 +9,20 @@
 int depth(SyntaxNode *node);
 int indent = 0;
 
+BlockNode::BlockNode(std::vector<SyntaxNode *> children) {
+  for (auto child : children) {
+    if (StmtNode *stmt = dynamic_cast<StmtNode*>(child)) {
+      this->children.push_back(stmt);
+    } else {
+      this->children.push_back(new StmtNode(child));
+    }
+  }
+}
+
+void StmtNode::accept(SyntaxNodeVisitor &v) {
+  v.visit(this);
+}
+
 void ValueNode::accept(SyntaxNodeVisitor &v) {
   v.visit(this);
 }
@@ -31,6 +45,10 @@ void LetNode::accept(SyntaxNodeVisitor &v) {
 
 void FnDefNode::accept(SyntaxNodeVisitor &v) {
   v.visit(this);
+}
+
+inline std::string StmtNode::name() {
+  return "stmt";
 }
 
 inline std::string ValueNode::name() {
@@ -61,7 +79,8 @@ int max_depth(std::vector<SyntaxNode*>& nodes) {
   return d;
 }
 
-std::string to_string_internal(std::vector<SyntaxNode*> nodes, bool _first_no_sep = false) {
+//template <typename T>
+std::string to_string_internal(std::vector<SyntaxNode* /*T*/> nodes, bool _first_no_sep = false) {
   int i = 0;
   bool pretty = pretty_print && max_depth(nodes) > pretty_print_max_depth;
 
@@ -91,6 +110,10 @@ std::string to_string_internal(std::vector<SyntaxNode*> nodes, bool _first_no_se
   return s;
 }
 
+std::string StmtNode::to_string() {
+  return "(;" + to_string_internal({expr}) + ")";
+}
+
 std::string ValueNode::to_string() {
   return (display_types)
     ? type->to_string() + ":" + token->literal
@@ -104,7 +127,7 @@ std::string ApplyNode::to_string() {
 }
 
 std::string BlockNode::to_string() {
-  return "(" + this->name() + to_string_internal(children) + ")";
+  return "(" + this->name() + to_string_internal(std::vector<SyntaxNode*>(children.begin(), children.end())) + ")";
 }
 
 std::string LetNode::to_string() {
@@ -133,6 +156,10 @@ public:
   }
   
   void visit(ValueNode *node) override {} // do nothing
+
+  void visit(StmtNode *node) override {
+    res = 1 + depth(node->expr);
+  }
   
   void visit(ApplyNode *node) override { // doesn't check fn
     int d = 0;

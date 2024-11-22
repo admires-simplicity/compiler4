@@ -210,7 +210,7 @@ private:
 
     // now we have a value, we can check for postfix ops
     std::optional<Token*> nxt = lexer.peek();
-    if (!nxt.has_value()) return val;
+    if (!nxt.has_value()) return val; // if we're at the end of the input
 
     // TODO: allow for repeated ()?
     tkn = nxt.value();
@@ -273,11 +273,13 @@ private:
     Token *op = lexer.next().value();
     if (bin_ops.contains(op->literal)) {
       SyntaxNode *right = parse_expr(syntax_ids[op->literal]); //(1)
-      //return new SyntaxNode(op, std::vector<SyntaxNode*>{left, right});
       return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{left, right});
-    } else {
-      //return new SyntaxNode(op, std::vector<SyntaxNode*>{left});
-      return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{left});
+    } else { // postfix
+      if (op->literal == ";") {
+        return new StmtNode(left);
+      } else {
+        return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{left}); // right now there actually are no other postfix ops...
+      }
     }
   }
   

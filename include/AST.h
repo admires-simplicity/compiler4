@@ -25,6 +25,17 @@ public:
   virtual std::string to_string() = 0;
 };
 
+class StmtNode : public SyntaxNode {
+public:
+  SyntaxNode *expr;
+  StmtNode() {}
+  StmtNode(SyntaxNode *expr) : expr(expr) {}
+
+  void accept(SyntaxNodeVisitor &v) override;
+  inline std::string name() override;
+  std::string to_string() override;
+};
+
 class ValueNode : public SyntaxNode {
 public:
   Type *type = new AtomicType(TypeSet::get_id("unassigned type"));
@@ -53,10 +64,11 @@ public:
 
 class BlockNode : public SyntaxNode {
 public:
-  std::vector<SyntaxNode *> children;
+  std::vector<StmtNode *> children;
 
   BlockNode() {}
-  BlockNode(std::vector<SyntaxNode *> children) : children(children) {}
+  BlockNode(std::vector<StmtNode *> children) : children(children) {}
+  BlockNode(std::vector<SyntaxNode *> children);
 
   void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
@@ -83,7 +95,7 @@ public:
 
 // TODO:
 // does this properly handle expression functions?
-class FnDefNode : public SyntaxNode {
+class FnDefNode : public StmtNode {
 public:
   ValueNode *ident;
   std::vector<SyntaxNode*> args;
@@ -97,6 +109,7 @@ public:
 
 class SyntaxNodeVisitor {
 public:
+  virtual void visit(StmtNode *node) = 0;
   virtual void visit(ValueNode *node) = 0;
   virtual void visit(ApplyNode *node) = 0;
   virtual void visit(BlockNode *node) = 0;
