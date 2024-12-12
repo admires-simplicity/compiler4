@@ -72,6 +72,11 @@ std::set<std::string> prefix_ops = {
   "return",
 };
 
+std::set<std::string> special_bin_ops = {
+  "then",
+  "else",
+};
+
 std::set<std::string> postfix_ops = {
   ";",
 };
@@ -222,6 +227,33 @@ private:
     return val;
   }
 
+  SyntaxNode *parse_special_bin_op_right_expr(std::string op) {
+    if (op == "else" || op == "then") {
+      SyntaxNode *right = parse_expr(0);
+      if (BlockNode *block = dynamic_cast<BlockNode*>(right)) {
+        return block;
+      } else {
+        return new BlockNode(std::vector<SyntaxNode*>{right});
+      }
+    }
+    return nullptr; // error
+  }
+
+  SyntaxNode *node_to_block(SyntaxNode *node) {
+    if (BlockNode *block = dynamic_cast<BlockNode*>(node)) {
+      return block;
+    } else {
+      return new BlockNode(std::vector<SyntaxNode*>{node});
+    }
+  }
+
+  ApplyNode *handle_special_bin_op(Token *op, SyntaxNode *left, SyntaxNode *right) {
+    if (op->literal == "then" || op->literal == "else") {
+      return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{left, node_to_block(right)});
+    }
+    return nullptr; // error
+  }
+
   // true if current operator can bind value as its left operator
   //      otherwise value binds as right of last operator
   bool can_bind_left(uint32_t current_op_id, uint32_t last_op_id) {
@@ -273,6 +305,10 @@ private:
     Token *op = lexer.next().value();
     if (bin_ops.contains(op->literal)) {
       SyntaxNode *right = parse_expr(syntax_ids[op->literal]); //(1)
+      // if (special_bin_ops.contains(op->literal)) right = parse_special_bin_op_right_expr(op->literal);
+      // else right = parse_expr(syntax_ids[op->literal]); //(1)
+      if (special_bin_ops.contains(op->literal)) return handle_special_bin_op(op, left, right); // TODO: change this to if (handle_special_bin_op) ...
+      else
       return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{left, right});
     } else { // postfix
       if (op->literal == ";") {

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+make debug || exit 1
+gdb -x debug_args

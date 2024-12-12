@@ -36,6 +36,15 @@ public:
   std::string to_string() override;
 };
 
+class ReturnNode : public StmtNode {
+public:
+  ReturnNode(SyntaxNode *expr) : StmtNode(expr) {}
+
+  void accept(SyntaxNodeVisitor &v) override;
+  inline std::string name() override;
+  std::string to_string() override;
+};
+
 class ValueNode : public SyntaxNode {
 public:
   Type *type = new AtomicType(TypeSet::get_id("unassigned type"));
@@ -110,6 +119,7 @@ public:
 class SyntaxNodeVisitor {
 public:
   virtual void visit(StmtNode *node) = 0;
+  virtual void visit(ReturnNode *node) = 0;
   virtual void visit(ValueNode *node) = 0;
   virtual void visit(ApplyNode *node) = 0;
   virtual void visit(BlockNode *node) = 0;

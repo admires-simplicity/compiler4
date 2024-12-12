@@ -72,49 +72,123 @@ bool is_fn_def(SyntaxNode *node) {
 //   return false; // call to_returning_segment here
 // }
 
-// class ReturningSegmentVisitor : public SyntaxNodeVisitor {
-//   bool res = true;
-// public:
-//   bool get_result() { return res; }
+bool to_returning_segment(SyntaxNode *node);
 
-//   void visit(ValueNode *node) override {
-//     assert(false); // nonsensical, should never be called. just needed for completeness to satisfy visitor interface.
-//   }
 
-//   void visit(ApplyNode *node) override {
-//     ValueNode *fn = dynamic_cast<ValueNode*>(node->fn);
-//     if (fn == nullptr) {
-//       res = false;
-//       return;
-//     }
-//     if (fn->token->)
+class ReturningSegmentVisitor : public SyntaxNodeVisitor {
+  bool res = true;
 
-//   }
-
-//   void visit(BlockNode *node) override {
-//   }
-
-//   void visit(ProgramBlockNode *node) override {
-//   }
-
-//   void visit(LetNode *node) override {
-//   }
-
-//   void visit(FnDefNode *node) override {
-//   }
-// };
-
-bool last_to_stmt(SyntaxNode* ) {
-  return false;
-}
-
-bool to_returning_segment(SyntaxNode* &node) {
-  // I can't use a visitor because I need to reassign node in a few cases
-  if (ValueNode *vn = dynamic_cast<ValueNode*>(node)) {
-
+  bool Stmt_to_return(StmtNode *node) {
+    bool is_return = to_returning_segment(node->expr);
+    if (!is_return) {
+      node->expr = new ReturnNode(node->expr);
+    }
+    return is_return;
   }
-  return false;
+
+public:
+  bool get_result() { return res; }
+
+  void visit(StmtNode *node) override {
+    // bool is_return = to_returning_segment(node->expr);
+    // if (!is_return) {
+    //   //node->expr = new ReturnNode(node->expr);
+    // }
+    // return;
+    res = Stmt_to_return(node);
+  }
+
+  void visit(ReturnNode *node) override {}
+
+  void visit(ValueNode *node) override {
+    res = false; // cannot turn a value node into a return node inside the visitor
+  }
+
+  void visit(ApplyNode *node) override {
+    if (node->fn->to_string() == "else") {
+      node->args[0]->accept(*this);
+      node->args[1]->accept(*this);
+    }
+    else if (node->fn->to_string() == "then") {
+      node->args[1]->accept(*this);
+    } else {    
+      res = false; // cannot turn an apply node into a return node inside the visitor
+    }
+  }
+
+  void visit(BlockNode *node) override {
+    // for (auto &child : node->children) {
+    //   child->accept(*this);
+    // }
+    // for (auto *child : node->children) {
+    //   visit(child);
+    // }
+    // auto it = node->children.begin();
+    // for ( ; it != node->children.end() - 1; ++it) {
+    //   visit(*it);
+    // }
+    // Stmt_to_return(*it);
+    to_returning_segment(node->children.back());
+  }
+
+  void visit(ProgramBlockNode *node) override {
+    for (auto *child : node->children) {
+      visit(child);
+    }
+  }
+
+  void visit(LetNode *node) override {
+    res = false; // cannot turn a let node into a return node inside the visitor
+  }
+
+  void visit(FnDefNode *node) override {
+    res = false; // cannot turn a fn def node into a return node inside the visitor
+  }
+};
+
+bool to_returning_segment(SyntaxNode *node) {
+  ReturningSegmentVisitor v;
+  node->accept(v);
+  return v.get_result();
 }
+
+// SyntaxNode *to_returning_segment(SyntaxNode* node) {
+//   // I can't use a visitor because I need to reassign node in a few cases
+//   if (ValueNode *vn = dynamic_cast<ValueNode*>(node)) {
+//     if (vn->token->literal == "return") return true;
+//     else {
+//       node = new ReturnNode(node);
+//       return true;
+//     }
+//   }
+//   else if (ReturnNode *rn = dynamic_cast<ReturnNode*>(node)) {
+//     return true;
+//   }
+//   else if (StmtNode *sn = dynamic_cast<ReturnNode*>(node)) {
+//     return to_returning_segment(sn->expr);
+//   }
+//   else if (ApplyNode *an = dynamic_cast<ApplyNode*>(node)) {
+//     if (ValueNode *fn = dynamic_cast<ValueNode*>(an->fn)) {
+//       if (fn->token->literal == "return") return true;
+//     }
+//     node = new ReturnNode(node);
+//     return true;
+//   }
+//   else if (BlockNode *bn = dynamic_cast<BlockNode*>(node)) {
+//     bool res = true;
+//     for (auto &child : bn->children) {
+//       SyntaxNode *child_sn = child;
+//       res = res && to_returning_segment(child_sn);
+//     }
+//     return res;
+//   }
+//   else {
+//     assert(false); // should never happen
+//       return false;
+//   }
+
+//   return new BlockNode();
+// }
 
 // SyntaxNode *comma_to_arg_list(SyntaxNode *node) {
 //     assert(node != nullptr && 1);
@@ -353,9 +427,12 @@ FnDefNode* to_FnDefNode(StmtNode* node) {
 //     return !found_error;
 // }
 
-bool format_fn(FnDefNode* node) {
-  //last_to_stmt(node->block);
-  //to_returning_segment(node->block);
+bool format_fn(FnDefNode* node, bool is_main = false) {
+  // SyntaxNode* block_node = node->block;
+  // to_returning_segment(block_node);
+  //node->block = to_returning_segment(node->block);
+
+  if (!is_main) to_returning_segment(node->block);
 
   return true;
 }
@@ -385,7 +462,7 @@ SyntaxNode *compile(SyntaxNode *node) {
       main_block->children.push_back(child);
     }
   }
-  format_fn(main_fn);
+  format_fn(main_fn, true);
 
   for (auto& function : function_decls) {
     program->children.push_back(function);

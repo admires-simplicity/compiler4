@@ -23,6 +23,10 @@ void StmtNode::accept(SyntaxNodeVisitor &v) {
   v.visit(this);
 }
 
+void ReturnNode::accept(SyntaxNodeVisitor &v) {
+  v.visit(this);
+}
+
 void ValueNode::accept(SyntaxNodeVisitor &v) {
   v.visit(this);
 }
@@ -49,6 +53,10 @@ void FnDefNode::accept(SyntaxNodeVisitor &v) {
 
 inline std::string StmtNode::name() {
   return "stmt";
+}
+
+inline std::string ReturnNode::name() {
+  return "return";
 }
 
 inline std::string ValueNode::name() {
@@ -114,6 +122,10 @@ std::string StmtNode::to_string() {
   return "(;" + to_string_internal({expr}) + ")";
 }
 
+std::string ReturnNode::to_string() {
+  return "(return" + to_string_internal({expr}) + ")";
+}
+
 std::string ValueNode::to_string() {
   return (display_types)
     ? type->to_string() + ":" + token->literal
@@ -158,6 +170,10 @@ public:
   void visit(ValueNode *node) override {} // do nothing
 
   void visit(StmtNode *node) override {
+    res = 1 + depth(node->expr);
+  }
+
+  void visit(ReturnNode *node) override {
     res = 1 + depth(node->expr);
   }
   

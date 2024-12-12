@@ -37,6 +37,11 @@ public:
     output << ";\n";
   }
 
+  void visit(ReturnNode* node) override {
+    output << "return ";
+    node->expr->accept(*this);
+  }
+
   void visit(ValueNode* node) override {
     output << node->token->literal;
   }
@@ -103,10 +108,10 @@ public:
     node->block->accept(*this);
   }
 
-  void visit_semicolon(ApplyNode* node) {
-    node->args[0]->accept(*this);
-    output << ";\n";
-  }
+  // void visit_semicolon(ApplyNode* node) {
+  //   node->args[0]->accept(*this);
+  //   output << ";\n";
+  // }
    
   void visit_binop(ApplyNode* node) {
     ValueNode *fn = dynamic_cast<ValueNode*>(node->fn);
@@ -124,9 +129,25 @@ public:
     node->args[0]->accept(*this);
   }
 
+  void visit_if(ApplyNode* node) {
+    output << "if (";
+    node->args[0]->accept(*this); // condition
+    output << ") ";
+  }
+
+  void visit_then(ApplyNode* node) {
+    node->args[0]->accept(*this); // if-expr
+    node->args[1]->accept(*this); // then-expr/block OR else-then-expr/block
+  }
+
+  void visit_else(ApplyNode* node) {
+    node->args[0]->accept(*this); // then-expr/block
+    node->args[1]->accept(*this); // else-expr/block
+  }
+
   bool handle_special_op(ApplyNode* node) {
     static const std::unordered_map<std::string, void(EmitVisitor::*)(ApplyNode*)> handlers = {
-      {";", &EmitVisitor::visit_semicolon},
+      // {";", &EmitVisitor::visit_semicolon},
       {"<", &EmitVisitor::visit_binop},
       {">", &EmitVisitor::visit_binop},
       {"+", &EmitVisitor::visit_binop},
@@ -136,6 +157,9 @@ public:
       {"^", &EmitVisitor::visit_binop},
       {"=", &EmitVisitor::visit_binop},
       {":", &EmitVisitor::visit_colon},
+      {"if", &EmitVisitor::visit_if},
+      {"then", &EmitVisitor::visit_then},
+      {"else", &EmitVisitor::visit_else},
     };
 
     ValueNode *fn = dynamic_cast<ValueNode*>(node->fn);
