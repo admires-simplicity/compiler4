@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "parser.h"
 #include "Cemitter.h"
 
 std::set<std::string> special_ops = {
@@ -142,33 +143,37 @@ public:
 
   void visit_else(ApplyNode* node) {
     node->args[0]->accept(*this); // then-expr/block
+    output << "else\n";
     node->args[1]->accept(*this); // else-expr/block
   }
 
   bool handle_special_op(ApplyNode* node) {
     static const std::unordered_map<std::string, void(EmitVisitor::*)(ApplyNode*)> handlers = {
       // {";", &EmitVisitor::visit_semicolon},
-      {"<", &EmitVisitor::visit_binop},
-      {">", &EmitVisitor::visit_binop},
-      {"+", &EmitVisitor::visit_binop},
-      {"-", &EmitVisitor::visit_binop},
-      {"*", &EmitVisitor::visit_binop},
-      {"/", &EmitVisitor::visit_binop},
-      {"^", &EmitVisitor::visit_binop},
-      {"=", &EmitVisitor::visit_binop},
+      // {"<", &EmitVisitor::visit_binop},
+      // {">", &EmitVisitor::visit_binop},
+      // {"+", &EmitVisitor::visit_binop},
+      // {"-", &EmitVisitor::visit_binop},
+      // {"*", &EmitVisitor::visit_binop},
+      // {"/", &EmitVisitor::visit_binop},
+      // {"^", &EmitVisitor::visit_binop},
+      // {"=", &EmitVisitor::visit_binop},
       {":", &EmitVisitor::visit_colon},
       {"if", &EmitVisitor::visit_if},
       {"then", &EmitVisitor::visit_then},
       {"else", &EmitVisitor::visit_else},
     };
 
-    ValueNode *fn = dynamic_cast<ValueNode*>(node->fn);
+    ValueNode *fn = dynamic_cast<ValueNode*>(node->fn); // get function pointer
     if (fn == nullptr) return false;
     std::string op = fn->token->literal;
 
     if (auto it = handlers.find(op); it != handlers.end()) {
       auto f = it->second;
       (this->*f)(node);
+      return true;
+    } else if (bin_ops.contains(node->fn->to_string())) {
+      EmitVisitor::visit_binop(node);
       return true;
     } else {
       return false;
