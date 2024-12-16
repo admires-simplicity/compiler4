@@ -147,6 +147,26 @@ public:
     node->args[1]->accept(*this); // else-expr/block
   }
 
+  void visit_let(ApplyNode* node) {
+    ApplyNode *eq = dynamic_cast<ApplyNode*>(node->args[0]);
+    if (eq == nullptr) {
+      std::cerr << "<Cemitter> Error: let node does not have an = operator\n";
+      res = false;
+      return;
+    }
+    ApplyNode *colon = dynamic_cast<ApplyNode*>(eq->args[0]);
+    if (colon == nullptr) {
+      std::cerr << "<Cemitter> Error: let node does not have a colon operator [Untyped vars TBI]\n";
+      res = false;
+      return;
+    }
+    SyntaxNode *referand = eq->args[1];
+    
+    colon->accept(*this);
+    output << " = ";
+    referand->accept(*this);
+  }
+
   bool handle_special_op(ApplyNode* node) {
     static const std::unordered_map<std::string, void(EmitVisitor::*)(ApplyNode*)> handlers = {
       // {";", &EmitVisitor::visit_semicolon},
@@ -162,6 +182,7 @@ public:
       {"if", &EmitVisitor::visit_if},
       {"then", &EmitVisitor::visit_then},
       {"else", &EmitVisitor::visit_else},
+      {"let", &EmitVisitor::visit_let},
     };
 
     ValueNode *fn = dynamic_cast<ValueNode*>(node->fn); // get function pointer
