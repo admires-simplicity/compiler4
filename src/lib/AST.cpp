@@ -123,7 +123,7 @@ std::string StmtNode::to_string() {
 }
 
 std::string ReturnNode::to_string() {
-  return "(return" + to_string_internal({expr}) + ")";
+  return "(" + this->name() + to_string_internal({expr}) + ")";
 }
 
 std::string ValueNode::to_string() {

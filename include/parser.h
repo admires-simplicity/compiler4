@@ -25,6 +25,8 @@ extern std::set<std::string> prefix_ops;
 
 extern std::set<std::string> special_bin_ops;
 
+extern std::set<std::string> special_prefix_ops;
+
 extern std::set<std::string> postfix_ops;
 
 extern std::map<uint32_t, uint32_t> unary_precedence;
@@ -76,6 +78,13 @@ private:
     return args;
   }
 
+  SyntaxNode *handle_special_prefix_op(Token *op) {
+    if (op->literal == "return") {
+      return new ReturnNode(parse_expr(syntax_ids["return"]));
+    }
+    return nullptr; // error
+  }
+
   // this function is a slight misnomer, since it handles parens and prefix ops
   // the "value" part is just the first line, `tkn = lexer.next().value()`
   SyntaxNode *parse_value() {
@@ -100,10 +109,13 @@ private:
       // value which is not a paren or block -- literal or prefix op
       lexer.next(); // consume token
       bool is_prefix_op = prefix_ops.contains(tkn->literal);
+      bool is_special_prefix_op = special_prefix_ops.contains(tkn->literal);
       
       // prefix op
-      if (is_prefix_op) {
-        //val = new SyntaxNode(tkn, std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal])});
+      if (is_special_prefix_op) {
+        val = handle_special_prefix_op(tkn);
+      }
+      else if (is_prefix_op) {
         val = new ApplyNode(new ValueNode(tkn), std::vector<SyntaxNode*>{parse_expr(syntax_ids[tkn->literal])});
       }
       // literal

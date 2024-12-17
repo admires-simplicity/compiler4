@@ -64,6 +64,10 @@ std::set<std::string> special_bin_ops = {
   "else",
 };
 
+std::set<std::string> special_prefix_ops = {
+  "return",
+};
+
 std::set<std::string> postfix_ops = {
   ";",
 };

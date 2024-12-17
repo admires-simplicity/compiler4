@@ -8,6 +8,7 @@
 #include "scope.h"
 #include "util.h"
 
+bool panic = false;
 
 bool is_fn_def(SyntaxNode *node) {
   StmtNode* stmt = dynamic_cast<StmtNode*>(node);

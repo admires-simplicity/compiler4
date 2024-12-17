@@ -67,7 +67,6 @@ public:
   }
 };
 
-
 extern const std::array<std::string, 13> basic_types;
 
 int infer_literal_type_id(std::string s); // infer literal value type id
