@@ -36,9 +36,10 @@ public:
   std::string to_string() override;
 };
 
-class ReturnNode : public StmtNode {
+class ReturnNode : public SyntaxNode {
 public:
-  ReturnNode(SyntaxNode *expr) : StmtNode(expr) {}
+  SyntaxNode *expr;
+  ReturnNode(SyntaxNode *expr) : expr(expr) {}
 
   void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
