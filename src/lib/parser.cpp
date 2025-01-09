@@ -62,6 +62,8 @@ std::set<std::string> prefix_ops = {
 std::set<std::string> special_bin_ops = {
   "then",
   "else",
+
+  "=",
 };
 
 std::set<std::string> special_prefix_ops = {

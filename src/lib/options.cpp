@@ -27,6 +27,18 @@ int pretty_print_max_depth = 1;
 
 uint64_t flags;
 
+void print_options(std::string& arg) {
+  for (int j = 2; j < arg.size(); ++j) {
+    if (std::tolower(arg[j]) == 't') display_types = true;
+    if (std::tolower(arg[j]) == 'p') {
+      pretty_print = true;
+      if (j+1 < arg.size() && std::isdigit(arg[j+1])) {
+        pretty_print_max_depth = std::stoi(arg.substr(j+1));
+      }
+    }
+  }
+}
+
 int64_t read_flags(int argc, char** argv) {
   int64_t flags = 0;
   for (int i = 1; i < argc; ++i) {
@@ -40,20 +52,11 @@ int64_t read_flags(int argc, char** argv) {
             break;
           case 'p':
             flags |= PARSE_TREE_ONLY;
-            if (arg[1] == 'P') flags |= PRETTY_PARSE_TREE;
-            if (arg.size() >= 3 && arg[2] == 't') flags |= PARSE_TREE_TYPES;
+            print_options(arg);
             break;
           case 'i':
             flags |= OUTPUT_IR;
-            for (int j = 2; j < arg.size(); ++j) {
-              if (std::tolower(arg[j]) == 't') display_types = true;
-              if (std::tolower(arg[j]) == 'p') {
-                pretty_print = true;
-                if (j+1 < arg.size() && std::isdigit(arg[j+1])) {
-                  pretty_print_max_depth = std::stoi(arg.substr(j+1));
-                }
-              }
-            }
+            print_options(arg);
             break;
           case 'v':
             flags |= VERBOSE;

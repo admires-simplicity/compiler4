@@ -1,3 +1,71 @@
+I'm going to use "interface" instead of "typeclass", and for constraints I'll use the syntax
+<arg list> | <constraint list>
+as in
+interface A a | B a { ... }
+f<a, b, c | A a, B b, C c, D a b>(x : a, y : b) -> c = { ... }
+
+Here, "A b | ..." looks slightly different than "a, b, c | ..." because it looks like
+in the former | has an interface name and type argument on the left (A a), whereas in the last_to_return
+we just have a list of arguments, but this is not the case. The former is really
+interface A (a | B a) { ... }
+so in both cases it's <arg list> | <constraint list>.
+
+
+
+
+
+
+something like:
+typeclass num t {}
+instance num int32 {} 
+instance num int64 {}
+instance num float32 {}
+instance num float64 {}
+typeclass (num t) => add t { _+_ :: t -> t -> t }
+instance add int32 where { _+_ = int32::_+_ }
+instance add int64 where { _+_ = int64::_+_ }
+instance add float32 where { _+_ = float32::_+_ }
+instance add float64 where { _+_ = float64::_+_ }
+?
+
+
+union numerics = Union<Int32, Int64, Float32, Float64>
+
+numerics t => add(t x, t y) -> t = {
+  match numerics(t)
+  | Int32 -> Int32::+(x, y)
+  | Int64 -> Int64::+(x, y)
+  | Float32 -> Float32::+(x, y)
+  | Float64 -> Float64::+(x, y)
+}
+
+typeclass numeric_tc t {
+  _add(t, t) -> t
+  _mul(t, t) -> t
+  _neg(t, t) -> t
+  _sub(t, t) -> t
+}
+
+instance numeric_tc Int32 {
+  _add = Int32::+
+  _mul = Int32::+
+  _neg = Int32::+
+  _sub = Int32::+
+}
+
+Int32 a = 1;
+Int32 b = 2;
+
+printf("%d\n", add(a, b));
+printf("%d\n", _add(a, b));
+
+typeof(add) == Union<numerics> t => t -> t -> t
+typeof(_add) == typeclass<numeric_tc> t => t -> t -> t
+
+
+
+
+
 todo:
 properly deduce function type in to_fndef (if type is explicitly given)
 implement last_to_return

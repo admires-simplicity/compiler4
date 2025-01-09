@@ -159,10 +159,86 @@ private:
     }
   }
 
-  ApplyNode *handle_special_bin_op(Token *op, SyntaxNode *left, SyntaxNode *right) {
+  SyntaxNode *handle_special_bin_op(Token *op, SyntaxNode *left, SyntaxNode *right) {
     if (op->literal == "then" || op->literal == "else") {
       return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{left, node_to_block(right)});
     }
+    else if (op->literal == "=") {
+      // /// syntaxes for value assignment ///////////
+      // // typed value assignment
+      // (=
+      //   (: <ident> <type>)
+      //   <value>)
+      // // untyped value assignment
+      // (=
+      //   <ident>
+      //   <value>)
+      // /// syntaxes for function definition ////////
+      // // typed function definition
+      // (=
+      //   (->
+      //     (f <arg1> ... <argn>)
+      //     <ret-type>)
+      //   <body>)
+      // // untyped function definition
+      // (=
+      //   (f <arg1> ... <argn>)
+      //   <body>)
+      
+      //return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{left, right});
+
+      ApplyNode *signature = dynamic_cast<ApplyNode*>(left);
+      if (signature == nullptr) { // untyped value assignment
+        //return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{left, right});
+        std::cerr << "<Parser> TO BE IMPLEMENTED: untyped value assignment" << std::endl;
+        return nullptr;
+      }
+      
+      ValueNode *sig_op = dynamic_cast<ValueNode*>(signature->fn);
+      if (sig_op == nullptr) {
+        std::cerr << "<Parser> Error: expected \":\", \"->\", or function name string, got " << signature->fn->to_string() << std::endl;
+        return nullptr;
+      }
+      else if (sig_op->token->literal == ":") { // typed value assignment
+        return new ApplyNode(new ValueNode(op), std::vector<SyntaxNode*>{signature, right});
+      }
+      else if (sig_op->token->literal == "->") { // typed function definition
+        // (->                     -- signature
+        //   (f <arg1> ... <argn>) -- fn_sig      -- f is fn_sig->fn, <arg1> ... <argn> is fn_sig->args
+        //   <ret-type>)           -- ret_type        
+        ApplyNode *fn_sig = dynamic_cast<ApplyNode*>(signature->args[0]);
+        if (fn_sig == nullptr) {
+          std::cerr << "<Parser> Error: expected function signature, got " << signature->args[0]->to_string() << std::endl;
+          return nullptr;
+        }
+
+        ValueNode *fn_name = dynamic_cast<ValueNode*>(fn_sig->fn);
+        if (fn_name == nullptr) {
+          std::cerr << "<Parser> Error: expected identifier, got " << fn_sig->fn->to_string() << std::endl;
+          return nullptr;
+        }
+
+        ValueNode *ret_type = dynamic_cast<ValueNode*>(signature->args[signature->args.size() - 1]);
+        if (ret_type == nullptr) {
+          std::cerr << "<Parser> Error: expected return type, got " << signature->args[signature->args.size() - 1]->to_string() << std::endl;
+          return nullptr;
+        }
+        fn_name->type = new CompositeType(std::vector<Type*> {new AtomicType(ret_type->token->literal)}); // TODO: maybe give CompositeType a move constructor
+
+        BlockNode *block = dynamic_cast<BlockNode*>(right);
+        if (block == nullptr) {
+          return new FnDefNode(fn_name, fn_sig->args, new BlockNode(std::vector<SyntaxNode*>{right}));
+        } else {
+          return new FnDefNode(fn_name, fn_sig->args, block);
+        }
+      }
+      else { // untyped function definition
+        std::cerr << "<Parser> TO BE IMPLEMENTED: untyped function definition" << std::endl;
+        return nullptr;
+      }
+
+    }
+
     return nullptr; // error
   }
 
