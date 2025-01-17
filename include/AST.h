@@ -19,10 +19,13 @@ class FnDefNode;
 class SyntaxNodeVisitor;
 
 class SyntaxNode {
+protected:
+  Type *type = new AtomicType(TypeSet::get_id("unassigned type"));
 public:
   virtual void accept(SyntaxNodeVisitor &v) = 0;
   virtual inline std::string name() = 0;
   virtual std::string to_string() = 0;
+  const Type *get_type() { return type; }
 };
 
 class StmtNode : public SyntaxNode {
@@ -48,9 +51,8 @@ public:
 
 class ValueNode : public SyntaxNode {
 public:
-  Type *type = new AtomicType(TypeSet::get_id("unassigned type"));
   Token *token;
-  ValueNode(Type *type, Token *token) : type(type), token(token) {}
+  ValueNode(Type *type, Token *token) : token(token) { this->type = type; }
   ValueNode(Token* token) : token(token) {}
   ValueNode(std::string literal) : token(new Token(literal)) {}
 

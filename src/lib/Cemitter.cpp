@@ -82,7 +82,7 @@ public:
   }
 
   void output_fn_id(ValueNode* node) {
-    CompositeType* type = dynamic_cast<CompositeType*>(node->type);
+    const CompositeType* type = dynamic_cast<const CompositeType*>(node->get_type());
     if (type == nullptr) {
       std::cerr << "<Cemitter> Error: function type is not a CompositeType\n";
       res = false;

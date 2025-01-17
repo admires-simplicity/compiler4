@@ -62,7 +62,7 @@ public:
     return ss.str().substr(0, ss.tellp());
   }
 
-  const Type *return_type() {
+  const Type *return_type() const {
     return types.back();
   }
 };

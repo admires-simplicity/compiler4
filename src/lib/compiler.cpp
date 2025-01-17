@@ -95,16 +95,14 @@ SyntaxNode *compile(SyntaxNode *node) {
   std::vector<FnDefNode *> function_decls;
   
   BlockNode* main_block = new BlockNode();
-  FnDefNode* main_fn = new FnDefNode(new ValueNode("main"), {}, main_block);
-  main_fn->ident->type = new CompositeType({new AtomicType("int")}); // (int) function type // TODO: we'll have to change this later if we decide to support command line arguments
+  FnDefNode* main_fn = new FnDefNode(new ValueNode(new CompositeType({new AtomicType("int")}), new Token("main")), {}, main_block);
+  // TODO: we'll have to change this later if we decide to support command line arguments
 
   for (int i = 0; i < program_statements->children.size(); ++i) {
     StmtNode* child = program_statements->children[i];
     if (FnDefNode *fn = dynamic_cast<FnDefNode*>(child->expr)) {
       format_fn(fn);
       program->children.push_back(fn);
-      display_types = true;
-      display_types = false;
     }
     else {
       main_block->children.push_back(child);

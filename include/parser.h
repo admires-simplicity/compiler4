@@ -223,7 +223,9 @@ private:
           std::cerr << "<Parser> Error: expected return type, got " << signature->args[signature->args.size() - 1]->to_string() << std::endl;
           return nullptr;
         }
-        fn_name->type = new CompositeType(std::vector<Type*> {new AtomicType(ret_type->token->literal)}); // TODO: maybe give CompositeType a move constructor
+
+        Type *t = new CompositeType(std::vector<Type*> {new AtomicType(ret_type->token->literal)}); // TODO: maybe give CompositeType a move 
+        fn_name = new ValueNode(t, fn_name->token);
 
         BlockNode *block = dynamic_cast<BlockNode*>(right);
         if (block == nullptr) {
