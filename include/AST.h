@@ -21,14 +21,17 @@ class SyntaxNodeVisitor;
 class SyntaxNode {
 protected:
   Type *type = new AtomicType(TypeSet::get_id("unassigned type"));
+  virtual std::string to_string_internal() = 0;
 public:
   virtual void accept(SyntaxNodeVisitor &v) = 0;
   virtual inline std::string name() = 0;
-  virtual std::string to_string() = 0;
+  virtual std::string to_string();
   const Type *get_type() { return type; }
 };
 
 class StmtNode : public SyntaxNode {
+protected:
+  std::string to_string_internal() override;
 public:
   SyntaxNode *expr;
   StmtNode() {}
@@ -36,20 +39,22 @@ public:
 
   void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
-  std::string to_string() override;
 };
 
 class ReturnNode : public SyntaxNode {
+protected:
+  std::string to_string_internal() override;
 public:
   SyntaxNode *expr;
   ReturnNode(SyntaxNode *expr) : expr(expr) {}
 
   void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
-  std::string to_string() override;
 };
 
 class ValueNode : public SyntaxNode {
+protected:
+  std::string to_string_internal() override;
 public:
   Token *token;
   ValueNode(Type *type, Token *token) : token(token) { this->type = type; }
@@ -58,10 +63,11 @@ public:
 
   void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
-  std::string to_string() override;
 };
 
 class ApplyNode : public SyntaxNode {
+protected:
+  std::string to_string_internal() override;
 public:
   SyntaxNode *fn;
   std::vector<SyntaxNode *> args;
@@ -69,12 +75,13 @@ public:
 
   void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
-  std::string to_string() override;
 
   SyntaxNode *operator[](int i);
 };
 
 class BlockNode : public SyntaxNode {
+protected:
+  std::string to_string_internal() override;
 public:
   std::vector<StmtNode *> children;
 
@@ -84,7 +91,6 @@ public:
 
   void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
-  std::string to_string() override;
 
   SyntaxNode *operator[](int i);
 };
@@ -95,6 +101,8 @@ public:
 };
 
 class LetNode : public SyntaxNode {
+protected:
+  std::string to_string_internal() override;
 public:
   ValueNode *ident;
   ValueNode *value;
@@ -102,12 +110,13 @@ public:
 
   void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
-  std::string to_string() override;
 };
 
 // TODO:
 // does this properly handle expression functions?
 class FnDefNode : public StmtNode {
+protected:
+  std::string to_string_internal() override;
 public:
   ValueNode *ident;
   std::vector<SyntaxNode*> args;
@@ -116,7 +125,6 @@ public:
 
   void accept(SyntaxNodeVisitor &v) override;
   inline std::string name() override;
-  std::string to_string() override;
 };
 
 class SyntaxNodeVisitor {

@@ -87,8 +87,14 @@ int max_depth(std::vector<SyntaxNode*>& nodes) {
   return d;
 }
 
+std::string SyntaxNode::to_string() {
+  return (display_types)
+      ? type->to_string() + ":" + to_string_internal()
+      : to_string_internal();
+}
+
 //template <typename T>
-std::string to_string_internal(std::vector<SyntaxNode* /*T*/> nodes, bool _first_no_sep = false) {
+std::string print_SyntaxNode_vector(std::vector<SyntaxNode* /*T*/> nodes, bool _first_no_sep = false) {
   int i = 0;
   bool pretty = pretty_print && max_depth(nodes) > pretty_print_max_depth;
 
@@ -118,37 +124,35 @@ std::string to_string_internal(std::vector<SyntaxNode* /*T*/> nodes, bool _first
   return s;
 }
 
-std::string StmtNode::to_string() {
-  return "(;" + to_string_internal({expr}) + ")";
+std::string StmtNode::to_string_internal() {
+  return "(;" + print_SyntaxNode_vector({expr}) + ")";
 }
 
-std::string ReturnNode::to_string() {
-  return "(" + this->name() + to_string_internal({expr}) + ")";
+std::string ReturnNode::to_string_internal() {
+  return "(" + this->name() + print_SyntaxNode_vector({expr}) + ")";
 }
 
-std::string ValueNode::to_string() {
-  return (display_types)
-    ? type->to_string() + ":" + token->literal
-    : token->literal;
+std::string ValueNode::to_string_internal() {
+  return token->literal;
 }
 
-std::string ApplyNode::to_string() {
+std::string ApplyNode::to_string_internal() {
   return "(" +
-  to_string_internal(add_vec<SyntaxNode*>(std::vector<SyntaxNode*>({fn}), args), true)
+  print_SyntaxNode_vector(add_vec<SyntaxNode*>(std::vector<SyntaxNode*>({fn}), args), true)
   + ")";
 }
 
-std::string BlockNode::to_string() {
-  return "(" + this->name() + to_string_internal(std::vector<SyntaxNode*>(children.begin(), children.end())) + ")";
+std::string BlockNode::to_string_internal() {
+  return "(" + this->name() + print_SyntaxNode_vector(std::vector<SyntaxNode*>(children.begin(), children.end())) + ")";
 }
 
-std::string LetNode::to_string() {
-  return "(" + this->name() + to_string_internal({ident, value}) + ")";
+std::string LetNode::to_string_internal() {
+  return "(" + this->name() + print_SyntaxNode_vector({ident, value}) + ")";
 }
 
-std::string FnDefNode::to_string() {
+std::string FnDefNode::to_string_internal() {
   return "(" + this->name() +
-  to_string_internal(add_vec<SyntaxNode*>(std::vector<SyntaxNode*>{ident}, add_vec<SyntaxNode*>(this->args, std::vector<SyntaxNode*>{block})))
+  print_SyntaxNode_vector(add_vec<SyntaxNode*>(std::vector<SyntaxNode*>{ident}, add_vec<SyntaxNode*>(this->args, std::vector<SyntaxNode*>{block})))
   + ")";
 }
 

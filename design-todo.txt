@@ -1,3 +1,20 @@
+temporarily get `+` typing as i64, then get typeclasses working and implement
+it as a typeclass
+
+
+interface Bottom<t> { bottom : t }
+instance Bottom<int> { bottom = 0 }
+instance Bottom<string> { bottom = "" }
+
+int
+const int
+lazy int
+lazy const int
+
+
+<Addable T> T -> T -> T:+
+typeclass Printable t { to_string :: t -> string }
+
 I'm going to use "interface" instead of "typeclass", and for constraints I'll use the syntax
 <arg list> | <constraint list>
 as in
@@ -61,6 +78,11 @@ printf("%d\n", _add(a, b));
 
 typeof(add) == Union<numerics> t => t -> t -> t
 typeof(_add) == typeclass<numeric_tc> t => t -> t -> t
+
+
+
+
+
 
 
 
